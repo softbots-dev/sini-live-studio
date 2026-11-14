@@ -15,7 +15,8 @@
     "dev": "npm run build && electron .",
     "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
     "test": "node --test test/*.test.mjs",
-    "dist": "npm run build && electron-builder --win nsis"
+    "dist": "npm run build && electron-builder --win nsis",
+    "smoke": "npm run build:main && electron scripts/smoke.mjs"
   },
   "dependencies": {
     "electron-updater": "6.8.11",
