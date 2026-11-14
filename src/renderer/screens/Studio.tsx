@@ -3,7 +3,7 @@ import { LogOut, MonitorPlay, Settings as SettingsIcon } from "lucide-react";
 import type { User } from "../App";
 import { useT } from "../i18n";
 import { useMainState } from "../store";
-import { Button, Field, IconButton } from "../ui";
+import { Button, Dialog, Field, IconButton } from "../ui";
 import { ScenesPanel } from "../panels/Scenes";
 import { SourcesPanel } from "../panels/Sources";
 import { PreviewPanel } from "../panels/Preview";
@@ -29,6 +29,8 @@ export function StudioScreen({ user }: { user: User }) {
   const [categories, setCategories] = useState<{ slug: string; name: string }[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [signOutError, setSignOutError] = useState(false);
+  const [askQuit, setAskQuit] = useState(false);
+  useEffect(() => window.studio.on("quit.ask", () => setAskQuit(true)), []);
   const live = ACTIVE_PHASES.has(broadcast.phase);
 
   useEffect(() => {
@@ -122,6 +124,24 @@ export function StudioScreen({ user }: { user: User }) {
       <StatusBar broadcast={broadcast} title={title} category={category} />
 
       {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
+      {askQuit && (
+        <Dialog
+          title={t("studio.app.quitTitle")}
+          onClose={() => setAskQuit(false)}
+          footer={
+            <>
+              <Button variant="ghost" onClick={() => setAskQuit(false)}>
+                {t("studio.app.cancel")}
+              </Button>
+              <Button variant="danger" onClick={() => void window.studio.invoke("quit.confirm")}>
+                {t("studio.app.quitConfirm")}
+              </Button>
+            </>
+          }
+        >
+          <p>{t("studio.app.quitBody")}</p>
+        </Dialog>
+      )}
     </div>
   );
 }

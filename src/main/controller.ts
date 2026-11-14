@@ -455,6 +455,7 @@ export function startController(win: BrowserWindow) {
       void refreshAccount();
     },
     isLive: () => machine.isActive(),
+    phase: () => (machine.snapshot() as { phase: string }).phase,
     end: () => machine.end(),
     shutdown() {
       if (statsTimer) clearInterval(statsTimer);

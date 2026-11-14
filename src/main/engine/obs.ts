@@ -125,6 +125,8 @@ export class ObsEngine {
       this.disconnect();
       throw new EngineError(`obs_init_${result}`);
     }
+    // Audio 48 kHz stereo (profil siaran studio), diatur sebelum sumber audio dibuat.
+    osn.AudioFactory.audioContext = { sampleRate: 48000, speakers: osn.ESpeakerLayout.Stereo };
     this.video = osn.VideoFactory.create();
     this.setCanvas({ width: 1920, height: 1080, fps: 30, videoKbps: 6000, audioKbps: 160 });
     // Thread callback obs-studio-node baru berjalan setelah RegisterSourceCallback (callback-manager.cpp);
