@@ -81,3 +81,10 @@ test("encoderSettings: CBR, bitrate profil, keyframe 2 dtk per jenis encoder", a
   assert.deepEqual(encoderSettings("h264_texture_amf", landscape), { rate_control: "CBR", bitrate: 6000, keyint_sec: 2, profile: "high" });
   assert.deepEqual(encoderSettings("obs_qsv11_v2", landscape), { rate_control: "CBR", bitrate: 6000, keyint_sec: 2, target_usage: "balanced", profile: "high" });
 });
+
+test("scrubLog juga menghapus host ingest tanpa skema (pesan 'is offline' libobs)", () => {
+  const out = scrubLog("[Info] abc123.global-contribute.example.net:443/app/ is offline. Try a different server", ["abc123.global-contribute.example.net"]);
+  assert.doesNotMatch(out, /abc123|global-contribute/);
+  const generic = scrubLog("[Info] 127.0.0.1:1935/app/ is offline.");
+  assert.doesNotMatch(generic, /127\.0\.0\.1:1935/);
+});

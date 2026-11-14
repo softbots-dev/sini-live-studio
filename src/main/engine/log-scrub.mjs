@@ -7,9 +7,11 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const URL = /rtmps?:\/\/\S+/gi;
+/** Host ingest tanpa skema, mis. "host:443/app/ is offline" dari libobs. */
+const HOST_APP = /[a-z0-9.-]+:\d{2,5}\/app\/?\S*/gi;
 
 export function scrubLog(text, keys = []) {
-  let out = String(text).replace(URL, "rtmp://[redacted]");
+  let out = String(text).replace(URL, "rtmp://[redacted]").replace(HOST_APP, "[redacted]");
   for (const k of keys) if (typeof k === "string" && k.length >= 4) out = out.split(k).join("[redacted]");
   return out;
 }

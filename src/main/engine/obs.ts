@@ -394,7 +394,9 @@ export class ObsEngine {
     const fitted = fitProfile(profile, chosen.hardware) as Profile;
     this.setCanvas({ ...profile, width: this.canvas.width, height: this.canvas.height }, { width: fitted.width, height: fitted.height });
 
-    this.secretKeys = [key];
+    // Key + host ingest (libobs mencatat host tanpa skema di pesan sambungan).
+    const host = server.replace(/^rtmps?:\/\//i, "").split(/[/:]/)[0];
+    this.secretKeys = [key, server, host].filter((v) => v.length >= 4);
     this.service = osn.ServiceFactory.create("rtmp_custom", "sini-service", { server, key, use_auth: false, bwtest: false });
     const stream = osn.AdvancedStreamingFactory.create();
     stream.service = this.service;
