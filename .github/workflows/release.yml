@@ -1,0 +1,29 @@
+# Rilis Sini Live Studio (berlaku di repo publik softbots-dev/sini-live-studio). Tag v* → bangun installer
+# Windows dari kode di repo ini (syarat GPL: installer = kode yang dipublikasikan) → GitHub Release.
+# Tanda tangan kode: aktif sendiri bila rahasia WIN_CSC_LINK diisi; kosong = installer tanpa tanda tangan.
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Biner Electron (Electron 43 tidak mengunduh saat npm ci)
+        run: node node_modules/electron/install.js
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Installer & GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: npx electron-builder --win nsis --publish always

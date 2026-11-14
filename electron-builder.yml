@@ -1,9 +1,13 @@
-# Installer Sini Live Studio (NSIS, per pengguna). Pipeline rilis lengkap: Task 11 (docs/live-studio.md).
+# Installer Sini Live Studio (NSIS, per pengguna, tanpa hak admin) — docs/live-studio.md §Rilis.
+# Installer & berkas pembaruan diterbitkan ke GitHub Releases repo publik (electron-updater membaca
+# latest.yml dari sana). Nama installer tetap sama tiap versi supaya tautan
+# https://github.com/softbots-dev/sini-live-studio/releases/latest/download/Sini-Live-Studio-Setup.exe stabil.
 appId: live.sini.studio
 productName: Sini Live Studio
 copyright: Sini — GPL-2.0-or-later
 directories:
   output: release
+  buildResources: build
 files:
   - dist/**/*
   - package.json
@@ -12,9 +16,16 @@ asarUnpack:
   - node_modules/obs-studio-node/**/*
 win:
   target: nsis
-  icon: build/icon.ico
+  icon: build/icon.png
 nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
-  artifactName: Sini-Live-Studio-Setup-${version}.${ext}
+  createDesktopShortcut: true
+  artifactName: Sini-Live-Studio-Setup.${ext}
+  license: LICENSE
+publish:
+  provider: github
+  owner: softbots-dev
+  repo: sini-live-studio
+  releaseType: release
