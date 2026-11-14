@@ -1,0 +1,20 @@
+# Installer Sini Live Studio (NSIS, per pengguna). Pipeline rilis lengkap: Task 11 (docs/live-studio.md).
+appId: live.sini.studio
+productName: Sini Live Studio
+copyright: Sini — GPL-2.0-or-later
+directories:
+  output: release
+files:
+  - dist/**/*
+  - package.json
+  - LICENSE
+asarUnpack:
+  - node_modules/obs-studio-node/**/*
+win:
+  target: nsis
+  icon: build/icon.ico
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  artifactName: Sini-Live-Studio-Setup-${version}.${ext}

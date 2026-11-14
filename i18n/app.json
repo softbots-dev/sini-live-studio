@@ -1,0 +1,4 @@
+{
+  "studio.app.name": {"id":"Sini Live Studio","en":"Sini Live Studio","de":"Sini Live Studio","es":"Sini Live Studio","fil":"Sini Live Studio","fr":"Sini Live Studio","hi":"Sini Live Studio","it":"Sini Live Studio","ja":"Sini Live Studio","ko":"Sini Live Studio","ms":"Sini Live Studio","nl":"Sini Live Studio","pl":"Sini Live Studio","pt-br":"Sini Live Studio","ru":"Sini Live Studio","th":"Sini Live Studio","tr":"Sini Live Studio","vi":"Sini Live Studio","zh-cn":"Sini Live Studio","zh-tw":"Sini Live Studio"},
+  "studio.app.loading": {"id":"Memuat…","en":"Loading…","de":"Wird geladen …","es":"Cargando…","fil":"Naglo-load…","fr":"Chargement…","hi":"लोड हो रहा है…","it":"Caricamento…","ja":"読み込み中…","ko":"불러오는 중…","ms":"Memuatkan…","nl":"Laden…","pl":"Ładowanie…","pt-br":"Carregando…","ru":"Загрузка…","th":"กำลังโหลด…","tr":"Yükleniyor…","vi":"Đang tải…","zh-cn":"正在加载…","zh-tw":"載入中…"}
+}

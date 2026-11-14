@@ -1,0 +1,42 @@
+{
+  "name": "sini-live-studio",
+  "productName": "Sini Live Studio",
+  "version": "0.1.0",
+  "description": "Sini Live Studio — siaran langsung ke Sini dari komputer, di atas libobs.",
+  "private": true,
+  "license": "GPL-2.0-or-later",
+  "author": "Sini",
+  "type": "module",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "vite build",
+    "build": "npm run build:main && npm run build:renderer",
+    "dev": "npm run build && electron .",
+    "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
+    "test": "node --test test/*.test.mjs",
+    "dist": "npm run build && electron-builder --win nsis"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.11",
+    "obs-studio-node": "https://s3-us-west-2.amazonaws.com/obsstudionodes3.streamlabs.com/osn-0.27.33-release-win64.tar.gz",
+    "ws": "8.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.30",
+    "@types/react": "19.1.8",
+    "@types/react-dom": "19.1.6",
+    "@types/ws": "8.18.1",
+    "@vitejs/plugin-react": "6.3.0",
+    "electron": "43.8.3",
+    "electron-builder": "26.15.7",
+    "lucide-react": "0.468.0",
+    "react": "19.1.10",
+    "react-dom": "19.1.10",
+    "typescript": "5.9.3",
+    "vite": "8.3.8"
+  },
+  "allowScripts": {
+    "electron-winstaller": false
+  }
+}

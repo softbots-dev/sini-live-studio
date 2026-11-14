@@ -1,0 +1,125 @@
+/*
+  Token tampilan Sini Live Studio — NILAI disalin dari tema gelap web Sini (src/app/globals.css,
+  docs/design-guide.md), bukan diimpor: kode studio berdiri sendiri (GPL). Studio selalu gelap
+  (ruang kerja siaran, sama dengan OBS/TikTok LIVE Studio). Ukuran teks tetap (rem) karena jendela
+  desktop minimum 1280×720 — tidak ada tata letak ponsel di sini.
+*/
+@font-face {
+  font-family: "Geist";
+  src: url("./fonts/geist-latin-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Outfit";
+  src: url("./fonts/outfit-latin-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  --canvas: #08070b;
+  --surface: #12111a;
+  --surface-2: #1b1926;
+  --surface-3: #252233;
+  --fg: #ffffff;
+  --fg-muted: #a3a3c2;
+  --fg-subtle: oklch(0.625 0.034 287);
+  --fg-onbrand: #ffffff;
+  --line: #201e2e;
+  --line-strong: #2e2b40;
+  --line-input: oklch(0.53 0.03 290);
+  --brand: #7c3aed;
+  --brand-hover: #8b4cf5;
+  --brand-soft: rgb(124 58 237 / 0.14);
+  --brand-ring: rgb(124 58 237 / 0.5);
+  --brand-ink: #a78bfa;
+  --accent: #ec4899;
+  --live: oklch(0.65 0.23 22);
+  --live-strong: oklch(0.58 0.23 22);
+  --success: oklch(0.72 0.17 155);
+  --warning: oklch(0.8 0.16 75);
+  --danger: oklch(0.65 0.21 25);
+  --danger-ink: oklch(0.7 0.19 25);
+  --danger-strong: oklch(0.575 0.21 25);
+  --info: oklch(0.7 0.15 245);
+
+  --text-2xs: 0.75rem;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.375rem;
+  --radius: 0.5rem;
+  --radius-lg: 0.75rem;
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-display: "Outfit", "Geist", system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+body {
+  background: var(--canvas);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  margin: 0;
+}
+.muted {
+  color: var(--fg-muted);
+}
+:focus-visible {
+  outline: 2px solid var(--brand-ring);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.splash {
+  height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+.splash h1 {
+  font-size: var(--text-xl);
+}
+.splash-icon {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-lg);
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+}
+.splash-icon svg {
+  width: 2rem;
+  height: 2rem;
+}
