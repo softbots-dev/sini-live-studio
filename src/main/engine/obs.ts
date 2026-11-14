@@ -127,6 +127,9 @@ export class ObsEngine {
     }
     this.video = osn.VideoFactory.create();
     this.setCanvas({ width: 1920, height: 1080, fps: 30, videoKbps: 6000, audioKbps: 160 });
+    // Thread callback obs-studio-node baru berjalan setelah RegisterSourceCallback (callback-manager.cpp);
+    // tanpa ini level volmeter tidak pernah sampai.
+    osn.NodeObs.RegisterSourceCallback(() => {});
     osn.NodeObs.RegisterVolmeterCallback((rows: { sourceName: string; peak: number[] }[]) => {
       for (const row of rows) this.events.onVolmeter(row.sourceName, row.peak);
     });
@@ -359,10 +362,24 @@ export class ObsEngine {
     osn.NodeObs.OBS_content_resizeDisplay(DISPLAY, Math.max(1, Math.round(b.width)), Math.max(1, Math.round(b.height)));
   }
 
-  destroyDisplay() {
+  /** Kotak kanvas di dalam tampilan (piksel perangkat) — untuk memetakan mouse ke koordinat kanvas. */
+  previewArea(): { x: number; y: number; width: number; height: number } | null {
+    if (!this.display) return null;
+    const o = osn.NodeObs.OBS_content_getDisplayPreviewOffset(DISPLAY) as { x: number; y: number } | undefined;
+    const s = osn.NodeObs.OBS_content_getDisplayPreviewSize(DISPLAY) as { width: number; height: number } | undefined;
+    if (!o || !s) return null;
+    return { x: o.x, y: o.y, width: s.width, height: s.height };
+  }
+
+  /**
+   * Sembunyikan pratinjau (dialog di atasnya). JANGAN OBS_content_destroyDisplay dari proses utama:
+   * terbukti membekukan proses utama Electron (deadlock jendela native). Tampilan dipindah ke luar
+   * area jendela dan dikecilkan; `moveDisplay` berikutnya memunculkannya lagi.
+   */
+  hideDisplay() {
     if (!this.display) return;
-    osn.NodeObs.OBS_content_destroyDisplay(DISPLAY);
-    this.display = false;
+    osn.NodeObs.OBS_content_resizeDisplay(DISPLAY, 1, 1);
+    osn.NodeObs.OBS_content_moveDisplay(DISPLAY, -20000, -20000);
   }
 
   // ── Siaran ────────────────────────────────────────────────────────────────
@@ -440,7 +457,7 @@ export class ObsEngine {
   shutdown() {
     if (!this.ready) return;
     this.teardownStream();
-    this.destroyDisplay();
+    // Tampilan tidak dihancurkan (lihat hideDisplay) — jendela ikut tertutup bersama aplikasi.
     for (const id of [...this.sources.keys()]) this.removeSource(id);
     for (const id of [...this.scenes.keys()]) this.removeScene(id);
     this.video?.destroy();

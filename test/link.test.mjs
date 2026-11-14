@@ -46,3 +46,14 @@ test("410 → expired; dibatalkan → cancelled", async () => {
   const out = await runLink({ http: http([{ status: 202, data: { status: "pending" } }]), locale: "en", openExternal: () => {}, onCode: () => {}, sleep: async () => ctl.abort(), signal: ctl.signal });
   assert.equal(out, "cancelled");
 });
+
+test("siteLocale: bahasa Windows → bahasa situs Sini", async () => {
+  const { siteLocale } = await import("../src/main/link.mjs");
+  assert.equal(siteLocale("id"), "id");
+  assert.equal(siteLocale("en-US"), "en");
+  assert.equal(siteLocale("pt-BR"), "pt-br");
+  assert.equal(siteLocale("zh-TW"), "zh-tw");
+  assert.equal(siteLocale("zh-CN"), "zh-cn");
+  assert.equal(siteLocale("fil-PH"), "fil");
+  assert.equal(siteLocale("sw"), "en");
+});

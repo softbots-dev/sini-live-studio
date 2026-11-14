@@ -75,3 +75,12 @@ test("refresh gagal → StudioHttpError 401 login_required; galat lain membawa k
   const down = createHttp({ origin: "https://sini.live", version: "1.0.0", jar: createCookieJar(), fetch: async () => { throw new TypeError("fetch failed"); } });
   await assert.rejects(down.get("/me"), (err) => err.status === 0 && err.code === "network");
 });
+
+test("cookie jar memanggil onChange saat isinya berubah", () => {
+  const seen = [];
+  const jar = createCookieJar({}, (c) => seen.push(c));
+  jar.store(["a=1; Path=/"]);
+  jar.store(["a=1; Path=/"]);
+  jar.clear();
+  assert.deepEqual(seen, [{ a: "1" }, {}]);
+});

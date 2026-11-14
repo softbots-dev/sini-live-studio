@@ -38,6 +38,9 @@ function blockedFrom(err) {
   return { phase: "failed", code: typeof err?.code === "string" ? err.code : "unknown" };
 }
 
+/**
+ * @param {{ http: any, engine: { startStream(o: { server: string, key: string, profile: any }): any, stopStream(): any }, liveMaintenance: () => Promise<boolean>, now: () => number, setTimer: (fn: () => any, ms: number) => any, clearTimer: (id: any) => void, onChange?: (state: any) => void }} deps
+ */
 export function createBroadcastMachine({ http, engine, liveMaintenance, now, setTimer, clearTimer, onChange = () => {} }) {
   let state = Object.freeze({ phase: "idle" });
   /** { server, key, profile } — rahasia, hanya selama siaran. */

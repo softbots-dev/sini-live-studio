@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain, shell } from "electron";
+import { app, BrowserWindow, shell } from "electron";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { startController } from "./controller.js";
 
 /*
   Proses utama Sini Live Studio. Hanya proses ini yang memegang sesi, alamat kirim siaran,
@@ -10,6 +11,7 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 let win: BrowserWindow | null = null;
+let controller: ReturnType<typeof startController> | null = null;
 
 if (!app.requestSingleInstanceLock()) app.quit();
 
@@ -38,6 +40,8 @@ function createWindow() {
   });
   win.webContents.on("will-navigate", (event) => event.preventDefault());
   void win.loadFile(join(here, "../renderer/index.html"));
+  controller = startController(win);
+  win.webContents.once("did-finish-load", () => controller?.start());
 }
 
 app.on("second-instance", () => {
@@ -46,7 +50,6 @@ app.on("second-instance", () => {
   win.focus();
 });
 
-ipcMain.handle("app.locale", () => app.getLocale());
-
 app.whenReady().then(createWindow);
 app.on("window-all-closed", () => app.quit());
+app.on("will-quit", () => controller?.shutdown());

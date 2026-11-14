@@ -15,11 +15,17 @@ export class StudioHttpError extends Error {
   }
 }
 
-/** Jar cookie sederhana: nama → nilai (domain tunggal = origin Sini). */
-export function createCookieJar(initial = {}) {
+/**
+ * Jar cookie sederhana: nama → nilai (domain tunggal = origin Sini).
+ * @param {Record<string, string>} [initial]
+ * @param {(cookies: Record<string, string>) => void} [onChange]
+ */
+export function createCookieJar(initial = {}, onChange = () => {}) {
   const map = new Map(Object.entries(initial));
+  const snapshot = () => JSON.stringify([...map]);
   return {
     store(setCookies) {
+      const before = snapshot();
       for (const line of setCookies ?? []) {
         const [pair, ...attrs] = String(line).split(";");
         const eq = pair.indexOf("=");
@@ -30,12 +36,15 @@ export function createCookieJar(initial = {}) {
         if (expired || value === "") map.delete(name);
         else map.set(name, value);
       }
+      if (snapshot() !== before) onChange(Object.fromEntries(map));
     },
     header() {
       return [...map].map(([k, v]) => `${k}=${v}`).join("; ");
     },
     clear() {
+      const had = map.size > 0;
       map.clear();
+      if (had) onChange({});
     },
     has(name) {
       return map.has(name);
