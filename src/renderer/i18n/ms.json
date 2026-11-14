@@ -51,6 +51,8 @@
   "studio.app.endTitle": "Tamatkan siaran?",
   "studio.app.ended.account_suspended": "Akaun anda telah digantung, jadi siaran dihentikan.",
   "studio.app.ended.auth_lost": "Sesi anda telah tamat, jadi siaran dihentikan. Log masuk semula untuk meneruskan.",
+  "studio.app.ended.channel_suspended": "Saluran anda telah digantung, jadi siaran dihentikan.",
+  "studio.app.ended.no_account": "Pasukan Sini telah melepaskan akaun siaran anda, jadi siaran dihentikan.",
   "studio.app.ended.not_streamer": "Peranan penstrim anda telah ditarik balik, jadi siaran dihentikan.",
   "studio.app.ended.user": "Siaran tamat.",
   "studio.app.engineFailed": "Enjin siaran tidak dapat dijalankan pada komputer ini.",

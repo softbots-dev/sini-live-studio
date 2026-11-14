@@ -133,7 +133,7 @@ test("start → kirim → ping tiap 4 dtk sampai live; alamat tidak pernah di sn
   assert.equal(r.m.snapshot().liveSince, "2026-11-15T10:00:00.000Z");
   assert.equal(pings, 3);
   await r.c.advance(60000);
-  assert.equal(pings, 3, "ping berhenti setelah live");
+  assert.equal(pings, 5, "setelah live hanya detak tiap 30 dtk (2× dalam 60 dtk)");
   for (const s of r.states) noSecret(s);
 });
 
@@ -248,4 +248,54 @@ test("Akhiri: engine berhenti, ping berhenti, fase ended(user)", async () => {
   assert.equal(r.engine.log.at(-1).op, "stop");
   await r.c.advance(30000);
   assert.equal(pings, 0);
+});
+
+test("saat LIVE tetap ada detak tiap 30 dtk: 403/401/409 menghentikan siaran", async () => {
+  for (const [err, reason] of [
+    [new StudioHttpError(403, "forbidden"), "not_streamer"],
+    [new StudioHttpError(401, "login_required"), "auth_lost"],
+    [new StudioHttpError(409, "broadcast_no_account"), "no_account"],
+    [new StudioHttpError(409, "channel_suspended"), "channel_suspended"],
+  ]) {
+    let pings = 0;
+    const r = machine({
+      "GET /me/channel/broadcast": ready,
+      "POST /me/channel/broadcast/start": { status: 200, data: { publishUrl: PUBLISH, profile: PROFILE } },
+      "POST /me/channel/broadcast/ping": () => (++pings === 1 ? { status: 200, data: { isLive: true, liveStartedAt: null } } : err),
+    });
+    await r.m.check();
+    await r.m.start({ orientation: "landscape" });
+    r.m.outputStarted();
+    await r.c.advance(4000);
+    assert.equal(r.m.snapshot().phase, "live");
+    await r.c.advance(30000);
+    assert.deepEqual([r.m.snapshot().phase, r.m.snapshot().reason], ["ended", reason], String(err.code));
+    assert.equal(r.engine.log.at(-1).op, "stop");
+  }
+});
+
+test("ping 409 saat menyambung juga menghentikan siaran", async () => {
+  const r = machine({
+    "GET /me/channel/broadcast": ready,
+    "POST /me/channel/broadcast/start": { status: 200, data: { publishUrl: PUBLISH, profile: PROFILE } },
+    "POST /me/channel/broadcast/ping": new StudioHttpError(409, "broadcast_no_account"),
+  });
+  await r.m.check();
+  await r.m.start({ orientation: "landscape" });
+  await r.c.advance(4000);
+  assert.deepEqual([r.m.snapshot().phase, r.m.snapshot().reason], ["ended", "no_account"]);
+});
+
+test("check() yang masih menunggu tidak menimpa siaran yang sudah dimulai", async () => {
+  let release;
+  const gate = new Promise((r) => (release = r));
+  const r = machine(
+    { "GET /me/channel/broadcast": ready, "POST /me/channel/broadcast/start": { status: 200, data: { publishUrl: PUBLISH, profile: PROFILE } }, "POST /me/channel/broadcast/ping": { status: 200, data: { isLive: false } } },
+    { liveMaintenance: () => gate },
+  );
+  const pending = r.m.check();
+  await r.m.start({ orientation: "landscape" });
+  release(true);
+  await pending;
+  assert.equal(r.m.snapshot().phase, "connecting");
 });

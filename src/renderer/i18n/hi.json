@@ -51,6 +51,8 @@
   "studio.app.endTitle": "ब्रॉडकास्ट खत्म करें?",
   "studio.app.ended.account_suspended": "आपका अकाउंट निलंबित कर दिया गया, इसलिए ब्रॉडकास्ट रुक गया।",
   "studio.app.ended.auth_lost": "आपका सेशन खत्म हो गया, इसलिए ब्रॉडकास्ट रुक गया। जारी रखने के लिए फिर से साइन इन करें।",
+  "studio.app.ended.channel_suspended": "आपका चैनल निलंबित कर दिया गया, इसलिए ब्रॉडकास्ट रुक गया।",
+  "studio.app.ended.no_account": "Sini टीम ने आपका ब्रॉडकास्ट खाता हटा दिया, इसलिए ब्रॉडकास्ट रुक गया।",
   "studio.app.ended.not_streamer": "आपकी स्ट्रीमर भूमिका हटा दी गई, इसलिए ब्रॉडकास्ट रुक गया।",
   "studio.app.ended.user": "ब्रॉडकास्ट खत्म हुआ।",
   "studio.app.engineFailed": "ब्रॉडकास्ट इंजन इस कंप्यूटर पर नहीं चल सकता।",

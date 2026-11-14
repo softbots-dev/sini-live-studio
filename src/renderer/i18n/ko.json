@@ -51,6 +51,8 @@
   "studio.app.endTitle": "방송을 종료할까요?",
   "studio.app.ended.account_suspended": "계정이 정지되어 방송이 중단되었어요.",
   "studio.app.ended.auth_lost": "세션이 만료되어 방송이 중단되었어요. 계속하려면 다시 로그인해 주세요.",
+  "studio.app.ended.channel_suspended": "채널이 정지되어 방송이 중지되었습니다.",
+  "studio.app.ended.no_account": "Sini 팀이 방송 계정을 해제하여 방송이 중지되었습니다.",
   "studio.app.ended.not_streamer": "스트리머 권한이 해제되어 방송이 중단되었어요.",
   "studio.app.ended.user": "방송이 종료되었어요.",
   "studio.app.engineFailed": "이 컴퓨터에서는 방송 엔진을 실행할 수 없어요.",

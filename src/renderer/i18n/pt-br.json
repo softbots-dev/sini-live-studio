@@ -51,6 +51,8 @@
   "studio.app.endTitle": "Encerrar a transmissão?",
   "studio.app.ended.account_suspended": "Sua conta foi suspensa, então a transmissão foi interrompida.",
   "studio.app.ended.auth_lost": "Sua sessão terminou, então a transmissão foi interrompida. Entre de novo para continuar.",
+  "studio.app.ended.channel_suspended": "Seu canal foi suspenso, então a live parou.",
+  "studio.app.ended.no_account": "A equipe Sini liberou sua conta de transmissão, então a live parou.",
   "studio.app.ended.not_streamer": "Sua função de streamer foi removida, então a transmissão foi interrompida.",
   "studio.app.ended.user": "Transmissão encerrada.",
   "studio.app.engineFailed": "O mecanismo de transmissão não pode rodar neste computador.",

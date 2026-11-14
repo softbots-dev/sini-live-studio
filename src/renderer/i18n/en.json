@@ -51,6 +51,8 @@
   "studio.app.endTitle": "End broadcast?",
   "studio.app.ended.account_suspended": "Your account was suspended, so the broadcast stopped.",
   "studio.app.ended.auth_lost": "Your session ended, so the broadcast stopped. Sign in again to continue.",
+  "studio.app.ended.channel_suspended": "Your channel was suspended, so the broadcast stopped.",
+  "studio.app.ended.no_account": "Your broadcast account was released by the Sini team, so the broadcast stopped.",
   "studio.app.ended.not_streamer": "Your streamer role was removed, so the broadcast stopped.",
   "studio.app.ended.user": "Broadcast ended.",
   "studio.app.engineFailed": "The broadcast engine can't run on this computer.",

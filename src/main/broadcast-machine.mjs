@@ -16,6 +16,8 @@ export const PING_FAST_MS = 4000;
 export const PING_SLOW_MS = 15000;
 export const SLOW_AFTER_MS = 90000;
 export const RECONNECT_WINDOW_MS = 60000;
+/** Detak saat LIVE: memastikan sesi/role/akun siaran masih sah. */
+export const LIVE_HEARTBEAT_MS = 30000;
 const RECONNECT_DELAYS = [2000, 4000, 8000, 16000, 30000];
 
 const BLOCKERS = {
@@ -86,23 +88,29 @@ export function createBroadcastMachine({ http, engine, liveMaintenance, now, set
   async function ping() {
     pingTimer = null;
     const my = session;
-    if (!publish || state.phase !== "connecting") return;
+    // Saat LIVE ping tetap berjalan pelan (detak) supaya sesi dicabut, role dicabut, akun dibekukan, atau
+    // akun siaran dilepas menghentikan siaran — tanpa itu studio terus mengirim dengan key lama.
+    if (!publish || (state.phase !== "connecting" && state.phase !== "live")) return;
     let retryMs = null;
     try {
       const { data } = await http.post("/me/channel/broadcast/ping", {});
       if (my !== session || !publish) return;
+      if (state.phase === "live") return schedulePing(LIVE_HEARTBEAT_MS);
       if (data?.isLive) {
         resumePhase = "live";
         liveSince = data.liveStartedAt ?? new Date(now()).toISOString();
         set({ phase: "live", orientation, liveSince });
-        return;
+        return schedulePing(LIVE_HEARTBEAT_MS);
       }
     } catch (err) {
       if (my !== session) return;
       if (err?.status === 401) return shutdown({ phase: "ended", reason: "auth_lost" });
       if (err?.status === 403) return shutdown({ phase: "ended", reason: err.code === "account_suspended" ? "account_suspended" : "not_streamer" });
+      if (err?.status === 409 && BLOCKERS[err.code]) return shutdown({ phase: "ended", reason: BLOCKERS[err.code] });
       if (err?.status === 429) retryMs = err.retryAfterMs ?? null;
+      if (state.phase === "live") return schedulePing(retryMs ?? LIVE_HEARTBEAT_MS);
     }
+    if (state.phase === "live") return schedulePing(LIVE_HEARTBEAT_MS);
     const slow = now() - connectingSince >= SLOW_AFTER_MS;
     if (slow && !state.slowStart) set({ ...state, slowStart: true });
     schedulePing(retryMs ?? (slow ? PING_SLOW_MS : PING_FAST_MS));
@@ -132,7 +140,9 @@ export function createBroadcastMachine({ http, engine, liveMaintenance, now, set
       const my = session;
       set({ phase: "checking" });
       try {
-        if (await liveMaintenance()) return set({ phase: "blocked", reason: "maintenance" });
+        const maintenance = await liveMaintenance();
+        if (my !== session) return;
+        if (maintenance) return set({ phase: "blocked", reason: "maintenance" });
         const { data } = await http.get("/me/channel/broadcast");
         if (my !== session) return;
         const channel = publicChannel(data?.channel);
@@ -184,7 +194,10 @@ export function createBroadcastMachine({ http, engine, liveMaintenance, now, set
       if (!publish || state.phase !== "reconnecting") return;
       if (reconnectTimer !== null) clearTimer(reconnectTimer);
       reconnectTimer = null;
-      if (resumePhase === "live") set({ phase: "live", orientation, liveSince });
+      if (resumePhase === "live") {
+        set({ phase: "live", orientation, liveSince });
+        schedulePing(LIVE_HEARTBEAT_MS);
+      }
       else {
         set({ phase: "connecting", orientation, slowStart: now() - connectingSince >= SLOW_AFTER_MS });
         schedulePing(PING_FAST_MS);

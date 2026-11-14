@@ -51,6 +51,8 @@
   "studio.app.endTitle": "¿Finalizar la transmisión?",
   "studio.app.ended.account_suspended": "Tu cuenta fue suspendida, así que la transmisión se detuvo.",
   "studio.app.ended.auth_lost": "Tu sesión terminó, así que la transmisión se detuvo. Inicia sesión de nuevo para continuar.",
+  "studio.app.ended.channel_suspended": "Tu canal fue suspendido, así que la transmisión se detuvo.",
+  "studio.app.ended.no_account": "El equipo de Sini liberó tu cuenta de transmisión, así que la transmisión se detuvo.",
   "studio.app.ended.not_streamer": "Se retiró tu rol de streamer, así que la transmisión se detuvo.",
   "studio.app.ended.user": "Transmisión finalizada.",
   "studio.app.engineFailed": "El motor de transmisión no puede funcionar en este equipo.",

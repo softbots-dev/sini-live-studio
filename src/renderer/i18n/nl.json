@@ -51,6 +51,8 @@
   "studio.app.endTitle": "Uitzending beëindigen?",
   "studio.app.ended.account_suspended": "Je account is geschorst, dus de uitzending is gestopt.",
   "studio.app.ended.auth_lost": "Je sessie is verlopen, dus de uitzending is gestopt. Log opnieuw in om door te gaan.",
+  "studio.app.ended.channel_suspended": "Je kanaal is opgeschort, dus de uitzending is gestopt.",
+  "studio.app.ended.no_account": "Het Sini-team heeft je uitzendaccount vrijgegeven, dus de uitzending is gestopt.",
   "studio.app.ended.not_streamer": "Je streamerrol is verwijderd, dus de uitzending is gestopt.",
   "studio.app.ended.user": "Uitzending beëindigd.",
   "studio.app.engineFailed": "De uitzendengine kan niet draaien op deze computer.",

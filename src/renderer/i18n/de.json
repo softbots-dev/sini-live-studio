@@ -51,6 +51,8 @@
   "studio.app.endTitle": "Übertragung beenden?",
   "studio.app.ended.account_suspended": "Dein Konto wurde gesperrt, daher wurde die Übertragung gestoppt.",
   "studio.app.ended.auth_lost": "Deine Sitzung ist abgelaufen, daher wurde die Übertragung gestoppt. Melde dich erneut an, um fortzufahren.",
+  "studio.app.ended.channel_suspended": "Dein Kanal wurde gesperrt, daher wurde die Übertragung beendet.",
+  "studio.app.ended.no_account": "Dein Sendekonto wurde vom Sini-Team freigegeben, daher wurde die Übertragung beendet.",
   "studio.app.ended.not_streamer": "Deine Streamer-Rolle wurde entfernt, daher wurde die Übertragung gestoppt.",
   "studio.app.ended.user": "Übertragung beendet.",
   "studio.app.engineFailed": "Das Sendemodul läuft auf diesem Computer nicht.",

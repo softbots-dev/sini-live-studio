@@ -51,6 +51,8 @@
   "studio.app.endTitle": "Yayın bitirilsin mi?",
   "studio.app.ended.account_suspended": "Hesabın askıya alındığı için yayın durdu.",
   "studio.app.ended.auth_lost": "Oturumun sona erdiği için yayın durdu. Devam etmek için tekrar giriş yap.",
+  "studio.app.ended.channel_suspended": "Kanalın askıya alındı, bu yüzden yayın durdu.",
+  "studio.app.ended.no_account": "Sini ekibi yayın hesabını kaldırdı, bu yüzden yayın durdu.",
   "studio.app.ended.not_streamer": "Yayıncı rolün kaldırıldığı için yayın durdu.",
   "studio.app.ended.user": "Yayın bitti.",
   "studio.app.engineFailed": "Yayın motoru bu bilgisayarda çalışamıyor.",

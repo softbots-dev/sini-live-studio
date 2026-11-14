@@ -94,7 +94,9 @@ export function startController(win: BrowserWindow) {
       try {
         await rawHttp.post("/auth/refresh");
         return true;
-      } catch {
+      } catch (err) {
+        // Sesi dicabut/kedaluwarsa: sama dengan 401 dari HTTP — hentikan siaran & keluar.
+        if (err instanceof StudioHttpError && err.status === 401) onHttpError(new StudioHttpError(401, "login_required"));
         return false;
       }
     },
@@ -114,6 +116,16 @@ export function startController(win: BrowserWindow) {
     realtime.connect(slug);
     pushChat();
   }
+  /** Scene akun ini dilepas dari mesin (keluar / sesi hilang) supaya akun lain tidak mewarisinya. */
+  function resetScenes() {
+    try {
+      scenes?.teardown();
+    } catch {
+      // mesin sudah mati
+    }
+    scenes = null;
+    send("scenes", null);
+  }
   function leaveRoom() {
     roomSlug = null;
     chatStatus = "idle";
@@ -126,6 +138,7 @@ export function startController(win: BrowserWindow) {
     if (err instanceof StudioHttpError && err.status === 401 && err.code === "login_required" && account.status === "signedIn") {
       machine.authLost();
       leaveRoom();
+      resetScenes();
       setAccount({ status: "signedOut", user: null });
       jar.clear();
     }
@@ -302,6 +315,7 @@ export function startController(win: BrowserWindow) {
     }
     jar.clear();
     leaveRoom();
+    resetScenes();
     setAccount({ status: "signedOut", user: null });
     return { ok: true };
   });

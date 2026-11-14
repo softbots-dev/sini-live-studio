@@ -51,6 +51,8 @@
   "studio.app.endTitle": "Tapusin ang broadcast?",
   "studio.app.ended.account_suspended": "Na-suspend ang account mo kaya huminto ang broadcast.",
   "studio.app.ended.auth_lost": "Natapos na ang session mo kaya huminto ang broadcast. Mag-sign in ulit para magpatuloy.",
+  "studio.app.ended.channel_suspended": "Na-suspend ang channel mo, kaya huminto ang live.",
+  "studio.app.ended.no_account": "Inalis ng Sini team ang broadcast account mo, kaya huminto ang live.",
   "studio.app.ended.not_streamer": "Inalis ang streamer role mo kaya huminto ang broadcast.",
   "studio.app.ended.user": "Tapos na ang broadcast.",
   "studio.app.engineFailed": "Hindi mapatakbo ang broadcast engine sa computer na ito.",

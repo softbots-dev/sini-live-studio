@@ -51,6 +51,8 @@
   "studio.app.endTitle": "Kết thúc buổi phát?",
   "studio.app.ended.account_suspended": "Tài khoản của bạn bị đình chỉ nên buổi phát đã dừng.",
   "studio.app.ended.auth_lost": "Phiên đăng nhập đã hết hạn nên buổi phát đã dừng. Hãy đăng nhập lại để tiếp tục.",
+  "studio.app.ended.channel_suspended": "Kênh của bạn đã bị đình chỉ nên buổi phát đã dừng.",
+  "studio.app.ended.no_account": "Đội ngũ Sini đã thu hồi tài khoản phát sóng của bạn nên buổi phát đã dừng.",
   "studio.app.ended.not_streamer": "Vai trò streamer của bạn đã bị gỡ nên buổi phát đã dừng.",
   "studio.app.ended.user": "Buổi phát đã kết thúc.",
   "studio.app.engineFailed": "Công cụ phát sóng không thể chạy trên máy tính này.",

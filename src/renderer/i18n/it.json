@@ -51,6 +51,8 @@
   "studio.app.endTitle": "Terminare la trasmissione?",
   "studio.app.ended.account_suspended": "Il tuo account è stato sospeso, quindi la trasmissione si è fermata.",
   "studio.app.ended.auth_lost": "La sessione è scaduta, quindi la trasmissione si è fermata. Accedi di nuovo per continuare.",
+  "studio.app.ended.channel_suspended": "Il tuo canale è stato sospeso, quindi la diretta si è interrotta.",
+  "studio.app.ended.no_account": "Il team di Sini ha rimosso il tuo account di trasmissione, quindi la diretta si è interrotta.",
   "studio.app.ended.not_streamer": "Il tuo ruolo di streamer è stato rimosso, quindi la trasmissione si è fermata.",
   "studio.app.ended.user": "Trasmissione terminata.",
   "studio.app.engineFailed": "Il motore di trasmissione non può funzionare su questo computer.",

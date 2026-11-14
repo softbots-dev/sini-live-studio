@@ -51,6 +51,8 @@
   "studio.app.endTitle": "Zakończyć transmisję?",
   "studio.app.ended.account_suspended": "Twoje konto zostało zawieszone, więc transmisja została zatrzymana.",
   "studio.app.ended.auth_lost": "Twoja sesja wygasła, więc transmisja została zatrzymana. Zaloguj się ponownie, aby kontynuować.",
+  "studio.app.ended.channel_suspended": "Twój kanał został zawieszony, więc transmisja została zatrzymana.",
+  "studio.app.ended.no_account": "Zespół Sini zwolnił Twoje konto nadawcze, więc transmisja została zatrzymana.",
   "studio.app.ended.not_streamer": "Twoja rola streamera została usunięta, więc transmisja została zatrzymana.",
   "studio.app.ended.user": "Transmisja zakończona.",
   "studio.app.engineFailed": "Silnik transmisji nie może działać na tym komputerze.",

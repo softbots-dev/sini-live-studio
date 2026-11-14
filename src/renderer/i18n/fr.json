@@ -51,6 +51,8 @@
   "studio.app.endTitle": "Terminer la diffusion ?",
   "studio.app.ended.account_suspended": "Ton compte a été suspendu, la diffusion s'est donc arrêtée.",
   "studio.app.ended.auth_lost": "Ta session a expiré, la diffusion s'est donc arrêtée. Reconnecte-toi pour continuer.",
+  "studio.app.ended.channel_suspended": "Ta chaîne a été suspendue, la diffusion s’est donc arrêtée.",
+  "studio.app.ended.no_account": "L’équipe Sini a retiré ton compte de diffusion, la diffusion s’est donc arrêtée.",
   "studio.app.ended.not_streamer": "Ton rôle de streamer a été retiré, la diffusion s'est donc arrêtée.",
   "studio.app.ended.user": "Diffusion terminée.",
   "studio.app.engineFailed": "Le moteur de diffusion ne peut pas fonctionner sur cet ordinateur.",

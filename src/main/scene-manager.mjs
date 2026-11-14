@@ -66,6 +66,12 @@ export function createSceneManager({ engine, load, save, newId }) {
       return JSON.parse(serialize(state));
     },
 
+    /** Lepas semua sumber & scene dari mesin (keluar / ganti akun) — koleksi di disk tidak diubah. */
+    teardown() {
+      for (const sc of state.scenes) engine.removeScene(sc.id);
+      for (const src of state.sources) engine.removeSource(src.id);
+    },
+
     orientation: () => state.orientation,
 
     setOrientation(orientation) {

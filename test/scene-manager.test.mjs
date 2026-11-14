@@ -106,3 +106,14 @@ test("scene baru, pindah, urutan lapisan, ubah item", () => {
   assert.equal(m.snapshot().activeSceneId, second);
   assert.deepEqual(engine.calls.at(-1), ["setActiveScene", second]);
 });
+
+test("teardown: semua sumber & scene dilepas dari mesin (ganti akun di PC yang sama)", () => {
+  const { m, engine } = manager();
+  m.apply();
+  const { sourceId } = m.addSource("text_gdiplus", "A", {});
+  const sceneId = m.snapshot().scenes[0].id;
+  engine.calls.length = 0;
+  m.teardown();
+  assert.ok(engine.calls.some((c) => c[0] === "removeSource" && c[1] === sourceId));
+  assert.ok(engine.calls.some((c) => c[0] === "removeScene" && c[1] === sceneId));
+});

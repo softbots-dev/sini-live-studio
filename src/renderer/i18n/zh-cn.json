@@ -51,6 +51,8 @@
   "studio.app.endTitle": "结束直播？",
   "studio.app.ended.account_suspended": "你的账号已被暂停，因此直播已停止。",
   "studio.app.ended.auth_lost": "登录已过期，因此直播已停止。请重新登录后继续。",
+  "studio.app.ended.channel_suspended": "你的频道已被冻结，直播已停止。",
+  "studio.app.ended.no_account": "Sini 团队已解除你的直播账号，直播已停止。",
   "studio.app.ended.not_streamer": "你的主播身份已被移除，因此直播已停止。",
   "studio.app.ended.user": "直播已结束。",
   "studio.app.engineFailed": "直播引擎无法在这台电脑上运行。",

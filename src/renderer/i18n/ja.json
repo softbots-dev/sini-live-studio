@@ -51,6 +51,8 @@
   "studio.app.endTitle": "配信を終了しますか？",
   "studio.app.ended.account_suspended": "アカウントが停止されたため、配信を停止しました。",
   "studio.app.ended.auth_lost": "セッションが終了したため、配信を停止しました。続けるにはもう一度サインインしてください。",
+  "studio.app.ended.channel_suspended": "チャンネルが停止されたため、配信を停止しました。",
+  "studio.app.ended.no_account": "Sini チームが配信アカウントの割り当てを解除したため、配信を停止しました。",
   "studio.app.ended.not_streamer": "ストリーマーの権限が取り消されたため、配信を停止しました。",
   "studio.app.ended.user": "配信が終了しました。",
   "studio.app.engineFailed": "このパソコンでは配信エンジンを起動できません。",

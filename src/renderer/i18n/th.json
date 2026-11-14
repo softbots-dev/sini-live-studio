@@ -51,6 +51,8 @@
   "studio.app.endTitle": "จบการออกอากาศไหม",
   "studio.app.ended.account_suspended": "บัญชีของคุณถูกระงับ การออกอากาศจึงหยุดลง",
   "studio.app.ended.auth_lost": "เซสชันหมดอายุ การออกอากาศจึงหยุดลง เข้าสู่ระบบอีกครั้งเพื่อดำเนินการต่อ",
+  "studio.app.ended.channel_suspended": "ช่องของคุณถูกระงับ จึงหยุดการไลฟ์แล้ว",
+  "studio.app.ended.no_account": "ทีม Sini ได้ยกเลิกบัญชีไลฟ์ของคุณ จึงหยุดการไลฟ์แล้ว",
   "studio.app.ended.not_streamer": "บทบาทสตรีมเมอร์ของคุณถูกเพิกถอน การออกอากาศจึงหยุดลง",
   "studio.app.ended.user": "การออกอากาศจบแล้ว",
   "studio.app.engineFailed": "เอนจินสำหรับการออกอากาศไม่สามารถทำงานบนคอมพิวเตอร์เครื่องนี้ได้",

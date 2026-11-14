@@ -51,6 +51,8 @@
   "studio.app.endTitle": "Akhiri siaran?",
   "studio.app.ended.account_suspended": "Akunmu dibekukan, siaran dihentikan.",
   "studio.app.ended.auth_lost": "Sesi berakhir, siaran dihentikan. Masuk lagi untuk melanjutkan.",
+  "studio.app.ended.channel_suspended": "Channel-mu dibekukan, siaran dihentikan.",
+  "studio.app.ended.no_account": "Akun siaranmu dilepas tim Sini, siaran dihentikan.",
   "studio.app.ended.not_streamer": "Peran streamer-mu dicabut, siaran dihentikan.",
   "studio.app.ended.user": "Siaran selesai.",
   "studio.app.engineFailed": "Mesin siaran tidak bisa dijalankan di komputer ini.",
