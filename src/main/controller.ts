@@ -2,6 +2,9 @@ import { app, dialog, ipcMain, shell, type BrowserWindow } from "electron";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import WebSocket from "ws";
+import { createChatModel } from "./chat-model.mjs";
+import { createRealtime } from "./realtime.mjs";
 import { createBroadcastMachine } from "./broadcast-machine.mjs";
 import { webOrigin } from "./config.mjs";
 import { createCookieJar, createHttp, StudioHttpError } from "./http.mjs";
@@ -60,11 +63,69 @@ export function startController(win: BrowserWindow) {
         throw err;
       }
     },
+    async del(path: string) {
+      try {
+        return await rawHttp.del(path);
+      } catch (err) {
+        onHttpError(err);
+        throw err;
+      }
+    },
   };
+
+  // ── Chat (gateway) ────────────────────────────────────────────────────────
+  const chat = createChatModel();
+  let chatTimer: NodeJS.Timeout | null = null;
+  let roomSlug: string | null = null;
+  let chatStatus: "idle" | "connecting" | "connected" = "idle";
+  const pushChat = () => {
+    if (chatTimer) return;
+    chatTimer = setTimeout(() => {
+      chatTimer = null;
+      send("chat", { status: chatStatus, ...chat.snapshot() });
+    }, 120);
+  };
+  const realtime = createRealtime({
+    origin,
+    cookieHeader: () => jar.header(),
+    WebSocket,
+    signedIn: () => account.status === "signedIn",
+    refreshSession: async () => {
+      try {
+        await rawHttp.post("/auth/refresh");
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    onEvent: (msg: { type: string; data: any }) => {
+      if (msg.type === "room.state") chatStatus = "connected";
+      if (msg.type === "socket.closed") chatStatus = "connecting";
+      if (msg.type === "chat.rejected") send("chat.rejected", { code: msg.data?.code ?? null });
+      chat.apply(msg);
+      pushChat();
+    },
+  });
+  function joinRoom(slug: string | null | undefined) {
+    if (!slug || slug === roomSlug) return;
+    roomSlug = slug;
+    chatStatus = "connecting";
+    chat.reset();
+    realtime.connect(slug);
+    pushChat();
+  }
+  function leaveRoom() {
+    roomSlug = null;
+    chatStatus = "idle";
+    realtime.disconnect();
+    chat.reset();
+    pushChat();
+  }
 
   function onHttpError(err: unknown) {
     if (err instanceof StudioHttpError && err.status === 401 && err.code === "login_required" && account.status === "signedIn") {
       machine.authLost();
+      leaveRoom();
       setAccount({ status: "signedOut", user: null });
       jar.clear();
     }
@@ -165,8 +226,9 @@ export function startController(win: BrowserWindow) {
     now: Date.now,
     setTimer: (fn: () => void, ms: number) => setTimeout(fn, ms),
     clearTimer: (id: NodeJS.Timeout) => clearTimeout(id),
-    onChange: (state: { phase: string }) => {
+    onChange: (state: { phase: string; channel?: { slug: string | null } | null }) => {
       send("broadcast", state);
+      if (state.channel?.slug && account.status === "signedIn") joinRoom(state.channel.slug);
       const active = ["starting", "connecting", "live", "reconnecting"].includes(state.phase);
       if (active && !statsTimer) statsTimer = setInterval(() => send("stats", engine.stats()), 1000);
       if (!active && statsTimer) {
@@ -239,6 +301,7 @@ export function startController(win: BrowserWindow) {
       // sesi mungkin sudah habis
     }
     jar.clear();
+    leaveRoom();
     setAccount({ status: "signedOut", user: null });
     return { ok: true };
   });
@@ -257,6 +320,29 @@ export function startController(win: BrowserWindow) {
   });
 
   handle("broadcast.get", () => machine.snapshot());
+  handle("chat.get", () => ({ status: chatStatus, ...chat.snapshot() }));
+  handle("chat.send", (body: string) => {
+    const text = String(body ?? "").trim().slice(0, 500);
+    if (!text) return false;
+    return realtime.send("chat.send", { body: text, nonce: randomUUID() });
+  });
+  handle("chat.delete", async (id: string) => {
+    try {
+      await http.del(`/chat/messages/${encodeURIComponent(id)}`);
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, code: err instanceof StudioHttpError ? err.code : "error" };
+    }
+  });
+  handle("chat.ban", async (username: string, type: "timeout" | "permanent") => {
+    if (!roomSlug) return { ok: false, code: "no_room" };
+    try {
+      await http.post(`/channels/${encodeURIComponent(roomSlug)}/chat/bans`, { username, type, ...(type === "timeout" ? { durationSec: 600 } : {}) });
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, code: err instanceof StudioHttpError ? err.code : "error" };
+    }
+  });
   handle("broadcast.check", () => machine.check());
   handle("broadcast.start", (opts: { title?: string; categorySlug?: string | null }) => {
     if (!scenes) return;
@@ -372,6 +458,7 @@ export function startController(win: BrowserWindow) {
     end: () => machine.end(),
     shutdown() {
       if (statsTimer) clearInterval(statsTimer);
+      realtime.disconnect();
       try {
         engine.shutdown();
       } catch {
