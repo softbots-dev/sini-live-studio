@@ -4,10 +4,10 @@ import type { Collection, Scene, Source } from "../screens/Studio";
 import { useT } from "../i18n";
 import { sourceDialogStore, useSourceDialog, type Result } from "../store";
 import { openItemMenu } from "../item-menu";
-import { iconForKind, SOURCE_DEFAULTS } from "../kinds";
+import { iconForKind, type UiKind } from "../kinds";
+import { AddSourceDialog } from "./AddSourceDialog";
 import { Button, Dialog, Field, IconButton } from "../ui";
 
-export const KINDS = ["dshow_input", "monitor_capture", "window_capture", "game_capture", "wasapi_input_capture", "wasapi_output_capture", "image_source", "text_gdiplus"] as const;
 const FILTERS = ["color_filter", "crop_filter", "chroma_key_filter", "noise_suppress_filter", "noise_gate_filter", "gain_filter", "compressor_filter"] as const;
 const AUDIO_ONLY = new Set(["wasapi_input_capture", "wasapi_output_capture"]);
 
@@ -45,15 +45,13 @@ export function SourcesPanel({ collection, scene, selected, onSelect }: { collec
     if (await openItemMenu({ t, item, scene, source: src, size: sizes[item.id] ?? null, canvas })) onSelect(null);
   };
 
-  const add = async (kind: string) => {
+  const added = ({ sourceId, itemId }: { sourceId: string; itemId: string }, kind: UiKind) => {
     setAdding(false);
-    const r = await run("source.add", kind, t(`studio.app.kind.${kind}`), SOURCE_DEFAULTS[kind] ?? {});
-    if (r.ok) {
-      const { sourceId, itemId } = r.value as { sourceId: string; itemId: string };
-      onSelect(itemId);
-      void window.studio.invoke("item.select", itemId);
-      if (kind !== "wasapi_output_capture") setEditing(sourceId);
-    }
+    setError(null);
+    onSelect(itemId);
+    void window.studio.invoke("item.select", itemId);
+    // Video & Tautan sudah dikonfigurasi di dialog tambah; audio komputer memakai perangkat bawaan.
+    if (!["video", "link", "desktopAudio"].includes(kind)) setEditing(sourceId);
   };
 
   return (
@@ -96,17 +94,7 @@ export function SourcesPanel({ collection, scene, selected, onSelect }: { collec
         </p>
       )}
 
-      {adding && (
-        <Dialog title={t("studio.app.addSource")} onClose={() => setAdding(false)}>
-          <div className="kind-grid">
-            {KINDS.map((k) => (
-              <Button key={k} variant="secondary" onClick={() => void add(k)}>
-                {t(`studio.app.kind.${k}`)}
-              </Button>
-            ))}
-          </div>
-        </Dialog>
-      )}
+      {adding && <AddSourceDialog onClose={() => setAdding(false)} onAdded={added} />}
       {editing && source(editing) && (
         <SourceDialog key={editing} source={source(editing)!} item={scene.items.find((i) => i.sourceId === editing) ?? null} onClose={() => setEditing(null)} />
       )}
@@ -137,10 +125,11 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
     void window.studio.invoke<{ name: string; value: string | number }[]>("source.options", source.id, prop).then(setOptions);
   }, [prop, source.id]);
 
+  const [updateError, setUpdateError] = useState<string | null>(null);
   const set = (patch: Record<string, unknown>) => {
     const next = { ...settings, ...patch };
     setSettings(next);
-    void window.studio.invoke("source.update", source.id, patch);
+    void window.studio.invoke<Result>("source.update", source.id, next).then((r) => setUpdateError(r && !r.ok && ["url_https_only", "file_missing"].includes(r.code) ? t(`studio.app.err.${r.code}`) : null));
   };
 
   const save = () => {
@@ -164,6 +153,11 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
       }
     >
       <Field label={t("studio.app.prop.name")}>{(id) => <input id={id} className="input" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} />}</Field>
+      {updateError && (
+        <p className="msg-error" role="alert">
+          {updateError}
+        </p>
+      )}
 
       {source.kind === "game_capture" && (
         <Field label={t("studio.app.prop.gameMode")}>
@@ -207,6 +201,29 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
           </Field>
         </>
       )}
+
+      {source.kind === "ffmpeg_source" && (
+        <>
+          <div className="field">
+            <span className="field-label">{t("studio.app.prop.videoFile")}</span>
+            <p className="hint">{settings.local_file ? String(settings.local_file) : t("studio.app.prop.noVideo")}</p>
+            <Button
+              onClick={async () => {
+                const file = await window.studio.invoke<string | null>("source.pickVideo");
+                if (file) set({ local_file: file, is_local_file: true });
+              }}
+            >
+              {t("studio.app.prop.chooseVideo")}
+            </Button>
+          </div>
+          <label className="check">
+            <input type="checkbox" checked={settings.looping !== false} onChange={(e) => set({ looping: e.target.checked })} />
+            {t("studio.app.prop.loop")}
+          </label>
+        </>
+      )}
+
+      {source.kind === "browser_source" && <LinkFields settings={settings} onCommit={(patch) => set(patch)} />}
 
       {source.kind === "image_source" && (
         <div className="field">
@@ -316,5 +333,27 @@ function FiltersDialog({ source, onClose }: { source: Source; onClose: () => voi
         </Button>
       </div>
     </Dialog>
+  );
+}
+
+/** Isian sumber Tautan: alamat (disimpan saat fokus pindah / Enter — divalidasi https di proses utama), lebar & tinggi. */
+function LinkFields({ settings, onCommit }: { settings: Record<string, unknown>; onCommit: (patch: Record<string, unknown>) => void }) {
+  const { t } = useT();
+  const [url, setUrl] = useState(String(settings.url ?? "https://"));
+  const commit = () => url.trim() !== settings.url && onCommit({ url: url.trim() });
+  return (
+    <>
+      <Field label={t("studio.app.prop.url")} hint={t("studio.app.prop.urlHint")}>
+        {(id) => <input id={id} className="input" type="url" spellCheck={false} value={url} onChange={(e) => setUrl(e.target.value)} onBlur={commit} onKeyDown={(e) => e.key === "Enter" && commit()} />}
+      </Field>
+      <div className="row">
+        <Field label={t("studio.app.prop.width")}>
+          {(id) => <input id={id} className="input" type="number" min={64} max={3840} value={Number(settings.width ?? 1920)} onChange={(e) => onCommit({ width: Math.min(3840, Math.max(64, Number(e.target.value) || 1920)) })} />}
+        </Field>
+        <Field label={t("studio.app.prop.height")}>
+          {(id) => <input id={id} className="input" type="number" min={64} max={3840} value={Number(settings.height ?? 1080)} onChange={(e) => onCommit({ height: Math.min(3840, Math.max(64, Number(e.target.value) || 1080)) })} />}
+        </Field>
+      </div>
+    </>
   );
 }
