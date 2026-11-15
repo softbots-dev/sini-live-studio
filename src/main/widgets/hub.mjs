@@ -12,7 +12,10 @@ const SEEN_MAX = 2000;
 const LINE_KIND = { message: "text", gift: "gift", follow: "follow", subscription: "member" };
 const GOAL_FIELD = { coins: "coins", gifts: "gifts", followers: "newFollowers", members: "newMembers" };
 
-export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor }) {
+/**
+ * @param {{ now: () => number, setTimer: (fn: () => void, ms: number) => any, clearTimer: (id: any) => void, absUrl: (u: string) => string, soundFor: (id: string) => ({ url: string | null, silent: boolean } | null), onCountdown?: (id: string, state: { running: boolean, remainingMs: number, at: number }) => void }} deps
+ */
+export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor, onCountdown = () => {} }) {
   const widgets = new Map(); // id → { type, settings, queue?, countdown? }
   const subs = new Map(); // id → Set<send>
   let locale = "en";
@@ -49,7 +52,8 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
     switch (w.type) {
       case "alert": {
         const showing = w.queue.showing();
-        return showing ? [["alert.show", publicAlert(showing)]] : [];
+        // resume: halaman yang tersambung ulang di tengah alert tidak memutar suaranya lagi.
+        return showing ? [["alert.show", publicAlert({ ...showing, resume: true })]] : [];
       }
       case "goal":
         return [["goal", { value: goalValue(w), target: w.settings.target }]];
@@ -72,7 +76,7 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
     for (const [event, data] of snapshot(id, w)) sendTo(id, event, data);
   };
 
-  const publicAlert = (a) => ({ id: a.id, sender: a.sender, name: a.name, icon: a.icon, quantity: a.quantity, soundUrl: a.soundUrl, silent: a.silent, durationMs: a.durationMs, ...(a.sample ? { sample: true } : {}) });
+  const publicAlert = (a) => ({ id: a.id, sender: a.sender, name: a.name, icon: a.icon, quantity: a.quantity, soundUrl: a.soundUrl, silent: a.silent, durationMs: a.durationMs, ...(a.sample ? { sample: true } : {}), ...(a.resume ? { resume: true } : {}) });
 
   function makeWidget(id, type, settings) {
     const w = { type, settings };
@@ -88,6 +92,39 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
     if (type === "countdown") w.countdown = createCountdown({ durationMs: settings.durationSec * 1000, now });
     return w;
   }
+
+  /** Timer "habis" hitung mundur yang berjalan: halaman & dialog Properti tahu jamnya berhenti. */
+  function armCountdown(id, w) {
+    if (w.cdTimer) clearTimer(w.cdTimer);
+    w.cdTimer = null;
+    const state = w.countdown.state();
+    if (!state.running) return;
+    w.cdTimer = setTimer(() => {
+      w.cdTimer = null;
+      const done = w.countdown.state();
+      // Timer menyala sebelum jamnya habis (jam dinding bergeser): pasang ulang, jangan kabarkan apa-apa.
+      if (done.running) return armCountdown(id, w);
+      sendTo(id, "countdown", done);
+      onCountdown(id, done);
+    }, state.remainingMs);
+  }
+  const dispose = (w) => {
+    w.queue?.reset();
+    if (w.cdTimer) clearTimer(w.cdTimer);
+    w.cdTimer = null;
+  };
+
+  /** Baris chat: pesan dan event masing-masing maks. CHAT_KEEP, supaya event tidak menggusur pesan. */
+  const keep = (list) => {
+    let text = 0;
+    let events = 0;
+    const out = [];
+    for (let i = list.length - 1; i >= 0; i--) {
+      const l = list[i];
+      if (l.kind === "text" ? text++ < CHAT_KEEP : events++ < CHAT_KEEP) out.push(l);
+    }
+    return out.reverse();
+  };
 
   function remember(id) {
     seen.add(id);
@@ -122,7 +159,7 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
       const ids = new Set(list.map((w) => w.id));
       for (const [id, w] of widgets) {
         if (ids.has(id)) continue;
-        w.queue?.reset();
+        dispose(w);
         widgets.delete(id);
       }
       for (const { id, type, settings } of list) {
@@ -132,7 +169,7 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
           if (type === "countdown" && prev.settings.durationSec !== settings.durationSec) prev.countdown.setDuration(settings.durationSec * 1000);
           prev.settings = settings;
         } else {
-          prev?.queue?.reset();
+          if (prev) dispose(prev);
           widgets.set(id, makeWidget(id, type, settings));
         }
         sendAll(id);
@@ -164,7 +201,8 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
             body: kind === "text" ? String(data.body ?? "") : "",
             ...(gift ? { gift: { name: gift.name, icon: gift.icon, quantity: gift.quantity } } : {}),
           },
-        ].slice(-CHAT_KEEP);
+        ];
+        lines = keep(lines);
         pushChat();
         if (gift) for (const [, w] of ofType("alert")) w.queue.push(gift, { durationMs: w.settings.durationSec * 1000, minCoins: w.settings.minCoins });
         return;
@@ -172,11 +210,14 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
       if (type === "chat.deleted" && data?.messageId) {
         lines = lines.filter((l) => l.id !== data.messageId);
         pushChat();
+        for (const [, w] of ofType("alert")) w.queue.cancel(data.messageId);
         return;
       }
       if (type === "chat.cleared" && data?.userId) {
         lines = lines.filter((l) => l.userId !== data.userId);
         pushChat();
+        // Hanya blokir: penonton yang di-timeout tetap sah gift-nya (tetap di goal/ranking), alertnya tetap.
+        if (data.ban?.type === "ban") for (const [, w] of ofType("alert")) w.queue.cancelSender(data.userId);
       }
     },
 
@@ -202,6 +243,7 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
       if (!w || w.type !== "countdown") return null;
       if (op === "reset") w.countdown.reset();
       else w.countdown.toggle();
+      armCountdown(id, w);
       const state = w.countdown.state();
       sendTo(id, "countdown", state);
       return state;
@@ -240,10 +282,21 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
       return ofType("ranking").map(([, w]) => w.settings.rows);
     },
 
+    /** Pindah room chat: baris & alert room lama dibuang (id pesan room lain boleh muncul lagi). */
+    roomChanged() {
+      lines = [];
+      seen = new Set();
+      for (const [id, w] of ofType("alert")) {
+        w.queue.reset();
+        sendTo(id, "alert.hide", { id: null });
+      }
+      pushChat();
+    },
+
     /** Ganti akun / keluar: tidak ada sisa akun lama. */
     reset() {
       for (const w of widgets.values()) {
-        w.queue?.reset();
+        dispose(w);
         w.countdown?.reset();
       }
       perf = { session: null };

@@ -1318,5 +1318,27 @@
     "vi": "Tạm dừng",
     "zh-cn": "暂停",
     "zh-tw": "暫停"
+  },
+  "studio.app.widget.unavailable": {
+    "id": "Widget tidak bisa dimuat di layar siaran. Tutup lalu buka lagi Sini Live Studio.",
+    "en": "Widgets can't load on the stream screen. Close and reopen Sini Live Studio.",
+    "de": "Widgets können auf dem Stream-Bild nicht geladen werden. Schließe Sini Live Studio und öffne es erneut.",
+    "es": "Los widgets no se pueden cargar en la pantalla de la transmisión. Cierra y vuelve a abrir Sini Live Studio.",
+    "fil": "Hindi ma-load ang mga widget sa screen ng stream. Isara at buksan muli ang Sini Live Studio.",
+    "fr": "Les widgets ne peuvent pas se charger à l'écran du live. Fermez puis rouvrez Sini Live Studio.",
+    "hi": "स्ट्रीम स्क्रीन पर विजेट लोड नहीं हो पा रहे। Sini Live Studio बंद करके फिर खोलें।",
+    "it": "I widget non si caricano sullo schermo della diretta. Chiudi e riapri Sini Live Studio.",
+    "ja": "配信画面にウィジェットを読み込めません。Sini Live Studio を閉じて、もう一度開いてください。",
+    "ko": "방송 화면에 위젯을 불러올 수 없어요. Sini Live Studio를 닫았다가 다시 열어 주세요.",
+    "ms": "Widget tidak dapat dimuatkan pada skrin siaran. Tutup dan buka semula Sini Live Studio.",
+    "nl": "Widgets kunnen niet laden op het streambeeld. Sluit Sini Live Studio en open het opnieuw.",
+    "pl": "Nie można załadować widżetów na ekranie transmisji. Zamknij i ponownie otwórz Sini Live Studio.",
+    "pt-br": "Os widgets não carregam na tela da transmissão. Feche e abra o Sini Live Studio de novo.",
+    "ru": "Виджеты не загружаются на экране трансляции. Закройте и снова откройте Sini Live Studio.",
+    "th": "โหลดวิดเจ็ตบนหน้าจอไลฟ์ไม่ได้ ปิดแล้วเปิด Sini Live Studio ใหม่",
+    "tr": "Widget'lar yayın ekranında yüklenemiyor. Sini Live Studio'yu kapatıp yeniden açın.",
+    "vi": "Không tải được tiện ích trên màn hình phát. Hãy đóng rồi mở lại Sini Live Studio.",
+    "zh-cn": "无法在直播画面上加载小组件。请关闭并重新打开 Sini Live Studio。",
+    "zh-tw": "無法在直播畫面上載入小工具。請關閉並重新開啟 Sini Live Studio。"
   }
 }

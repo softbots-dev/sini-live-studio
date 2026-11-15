@@ -4,7 +4,7 @@ import { useT } from "../i18n";
 import { useMainState } from "../store";
 import { useDuration, type BroadcastState } from "./ControlBar";
 
-type Perf = { session: null } | { session: { id: string; startedAt: string }; diamonds: number; gifts: number; newFollowers: number; newMembers: number; chatters: number };
+type Perf = { session: null; failed?: boolean } | { session: { id: string; startedAt: string }; diamonds: number; gifts: number; newFollowers: number; newMembers: number; chatters: number };
 
 /*
   Performa siaran yang sedang berjalan (GET /v1/me/channel/live-stats lewat event `perf`) + penonton dari
@@ -46,7 +46,7 @@ export function PerformancePanel({ broadcast }: { broadcast: BroadcastState }) {
           <Metric icon={<MessageSquareText />} value={perf.chatters} label={t("studio.app.perf.chatters")} />
         </div>
       ) : (
-        <p className="perf-empty">{t("studio.app.perf.empty")}</p>
+        <p className="perf-empty">{t(live && perf.session === null && perf.failed ? "studio.app.perf.failed" : "studio.app.perf.empty")}</p>
       )}
     </section>
   );

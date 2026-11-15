@@ -20,8 +20,14 @@ export function WidgetFields({ source, settings, onCommit }: { source: Source; s
   const { t } = useT();
   const type = String(settings.widget ?? "");
   const hasTitle = ["goal", "counter", "countdown", "ranking"].includes(type);
+  const available = useWidgetsAvailable();
   return (
     <>
+      {!available && (
+        <p className="msg-warn" role="alert">
+          {t("studio.app.widget.unavailable")}
+        </p>
+      )}
       {hasTitle && <TitleField key={source.id} value={String(settings.title ?? "")} onCommit={(title) => onCommit({ title })} />}
 
       {type === "alert" && (
@@ -111,6 +117,19 @@ export function WidgetFields({ source, settings, onCommit }: { source: Source; s
   );
 }
 
+/** false kalau server widget lokal gagal menyala (widget tampil kosong sampai studio dibuka ulang). */
+export function useWidgetsAvailable() {
+  const [available, setAvailable] = useState(true);
+  useEffect(() => {
+    let alive = true;
+    void window.studio.invoke<boolean>("widget.available").then((ok) => alive && setAvailable(ok !== false));
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return available;
+}
+
 /**
  * Angka disimpan (dan dijepit ke batasnya) saat isian ditinggalkan / Enter — bukan tiap ketukan, supaya
  * mengetik "12" tidak dijepit dulu di "1". Tombol panah naik/turun tetap langsung tersimpan.
@@ -183,6 +202,8 @@ function CountdownFields({ sourceId, durationSec, onCommit }: { sourceId: string
   const [running, setRunning] = useState(false);
   useEffect(() => {
     void window.studio.invoke<{ running: boolean } | null>("widget.countdownState", sourceId).then((s) => setRunning(Boolean(s?.running)));
+    // Jam habis saat dialog terbuka → tombol kembali "Mulai".
+    return window.studio.on<{ id: string; state: { running: boolean } }>("widget.countdown", (e) => e.id === sourceId && setRunning(Boolean(e.state?.running)));
   }, [sourceId]);
   const h = Math.floor(durationSec / 3600);
   const m = Math.floor((durationSec % 3600) / 60);

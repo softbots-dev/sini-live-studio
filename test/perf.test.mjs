@@ -78,3 +78,18 @@ test("galat tidak menghentikan jadwal; berhenti membatalkan timer dan mengabarka
   await h.flush();
   assert.equal(h.calls.length, 1);
 });
+
+test("gagal sebelum ada data → kabar failed (bukan keadaan kosong); data terakhir tetap saat gagal lagi", async () => {
+  const h = harness();
+  h.setFail(true);
+  h.poller.start();
+  await h.flush();
+  assert.deepEqual(h.changes.at(-1), { session: null, failed: true });
+  h.setFail(false);
+  await h.fire();
+  assert.deepEqual(h.changes.at(-1), { session: { id: "s", startedAt: "x" }, diamonds: 1 });
+  const n = h.changes.length;
+  h.setFail(true);
+  await h.fire();
+  assert.equal(h.changes.length, n);
+});

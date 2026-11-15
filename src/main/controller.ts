@@ -98,7 +98,9 @@ export function startController(win: BrowserWindow) {
   // ── Widget di layar siaran (docs/live-studio.md § Widget) ────────────────────
   const absUrl = (u: string) => (typeof u === "string" && u.startsWith("/") ? `${origin.replace(/\/+$/, "")}${u}` : u);
   const catalogSounds = createCatalogSounds({ fetch: async () => (await rawHttp.get("/catalog")).data, origin, now: Date.now });
-  const widgetHub = createWidgetHub({ now: Date.now, setTimer: (fn: () => void, ms: number) => setTimeout(fn, ms), clearTimer: (id: NodeJS.Timeout) => clearTimeout(id), absUrl, soundFor: (id: string) => catalogSounds.soundFor(id) });
+  const widgetHub = createWidgetHub({ now: Date.now, setTimer: (fn: () => void, ms: number) => setTimeout(fn, ms), clearTimer: (id: NodeJS.Timeout) => clearTimeout(id), absUrl, soundFor: (id: string) => catalogSounds.soundFor(id), onCountdown: (id: string, state: unknown) => send("widget.countdown", { id, state }) });
+  /** false = server widget gagal menyala: widget kosong, UI memberi tahu (bukan diam-diam). */
+  let widgetsReady = true;
   const widgetServer = createWidgetServer({ hub: widgetHub, staticDir: join(dirname(fileURLToPath(import.meta.url)), "../renderer"), origin });
   /** Sumber `sini_widget` → sumber browser ber-URL lokal (dibuat saat jalan, tidak pernah disimpan). */
   const widgetSource = (id: string, settings: { widget: keyof typeof WIDGET_SIZES }) => {
@@ -156,6 +158,7 @@ export function startController(win: BrowserWindow) {
   });
   function joinRoom(slug: string | null | undefined) {
     if (!slug || slug === roomSlug) return;
+    if (roomSlug) widgetHub.roomChanged();
     roomSlug = slug;
     chatStatus = "connecting";
     chat.reset();
@@ -176,6 +179,8 @@ export function startController(win: BrowserWindow) {
   }
   function leaveRoom() {
     roomSlug = null;
+    rankingSlug = null;
+    ranking.stop();
     chatStatus = "idle";
     realtime.disconnect();
     chat.reset();
@@ -494,6 +499,7 @@ export function startController(win: BrowserWindow) {
   });
   handle("widget.countdown", (id: string, op: "toggle" | "reset") => widgetHub.countdown(id, op));
   handle("widget.countdownState", (id: string) => widgetHub.countdownState(id));
+  handle("widget.available", () => widgetsReady);
   handle("source.options", (id: string, property: string) => {
     try {
       return engine.sourceOptions(id, property);
@@ -501,12 +507,14 @@ export function startController(win: BrowserWindow) {
       return [];
     }
   });
-  handle("source.pickVideo", async () => {
-    const r = await dialog.showOpenDialog(win, { properties: ["openFile"], filters: [{ name: "Video", extensions: ["mp4", "mov", "mkv", "webm", "flv", "avi"] }] });
+  /** Nama filter dialog berkas dari renderer (sudah diterjemahkan); jenis berkasnya tetap ditentukan di sini. */
+  const filterName = (label: unknown, fallback: string) => (typeof label === "string" && label.trim() ? label.replace(/[\u0000-\u001f]/g, "").slice(0, 60) : fallback);
+  handle("source.pickVideo", async (label?: string) => {
+    const r = await dialog.showOpenDialog(win, { properties: ["openFile"], filters: [{ name: filterName(label, "Video"), extensions: ["mp4", "mov", "mkv", "webm", "flv", "avi"] }] });
     return r.canceled ? null : (r.filePaths[0] ?? null);
   });
-  handle("source.pickImage", async () => {
-    const r = await dialog.showOpenDialog(win, { properties: ["openFile"], filters: [{ name: "Image", extensions: ["png", "jpg", "jpeg", "gif", "webp", "bmp"] }] });
+  handle("source.pickImage", async (label?: string) => {
+    const r = await dialog.showOpenDialog(win, { properties: ["openFile"], filters: [{ name: filterName(label, "Image"), extensions: ["png", "jpg", "jpeg", "gif", "webp", "bmp"] }] });
     return r.canceled ? null : (r.filePaths[0] ?? null);
   });
 
@@ -606,7 +614,10 @@ export function startController(win: BrowserWindow) {
       // Server widget dulu: koleksi yang dimuat memakai URL-nya (port) untuk sumber widget.
       void widgetServer
         .start()
-        .catch(() => 0)
+        .catch(() => {
+          widgetsReady = false;
+          return 0;
+        })
         .then(() => {
           setImmediate(initEngine);
           void refreshAccount();

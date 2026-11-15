@@ -12,6 +12,7 @@ export function createPerfPoller({ fetch, now, setTimer, clearTimer, onChange })
   let timer = null;
   let lastAt = -Infinity;
   let generation = 0;
+  let hasValue = false;
 
   function schedule() {
     if (timer !== null) clearTimer(timer);
@@ -26,9 +27,14 @@ export function createPerfPoller({ fetch, now, setTimer, clearTimer, onChange })
     void Promise.resolve()
       .then(fetch)
       .then((value) => {
-        if (running && my === generation) onChange(value);
+        if (!running || my !== generation) return;
+        hasValue = true;
+        onChange(value);
       })
-      .catch(() => {});
+      .catch(() => {
+        // Belum pernah dapat data: tampilan memberi tahu (bukan keadaan "belum live"); sudah ada data: tetap.
+        if (running && my === generation && !hasValue) onChange({ session: null, failed: true });
+      });
   }
 
   return {
@@ -36,6 +42,7 @@ export function createPerfPoller({ fetch, now, setTimer, clearTimer, onChange })
       if (running) return;
       running = true;
       generation++;
+      hasValue = false;
       tick();
     },
     refresh() {

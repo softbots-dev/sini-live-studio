@@ -164,8 +164,23 @@ export function presetTransform(preset, item, size, canvas) {
     case "bottom":
       return { y: Math.round(canvas.height - b.h) };
     default:
-      return { x: 0, y: 0, scaleX: 1, scaleY: 1, crop: { ...ZERO } };
+      return { x: 0, y: 0, scaleX: 1, scaleY: 1, crop: { ...ZERO }, rotation: 0, flipH: false, flipV: false };
   }
+}
+
+const VISIBLE = { n: "top", e: "right", s: "bottom", w: "left" };
+/** Potongan per sisi TERLIHAT (untuk isian angka) dari potongan per sisi sumber yang disimpan. */
+export function visibleCrop(item) {
+  const c = cropOf(item);
+  const out = {};
+  for (const [v, side] of Object.entries(VISIBLE)) out[side] = c[sourceSide(item, v)];
+  return out;
+}
+/** Kebalikan visibleCrop: isian per sisi terlihat → potongan per sisi sumber yang disimpan. */
+export function sourceCrop(item, visibleSides) {
+  const out = { ...ZERO };
+  for (const [v, side] of Object.entries(VISIBLE)) out[sourceSide(item, v)] = Math.max(0, Number(visibleSides[side]) || 0);
+  return out;
 }
 
 /** Putar +90° searah jarum jam; pusat kotak terlihat tetap. */

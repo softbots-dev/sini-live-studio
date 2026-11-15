@@ -16,3 +16,8 @@ export type Guide = { side: "left" | "right" | "top" | "bottom"; x1: number; y1:
 export function selectionFrame(box: Box, canvas: Size, area: { x: number; y: number; width: number; height: number }): { box: Box; guides: Guide[] };
 export function rotateItem(item: ItemGeom, size: Size): { rotation: 0 | 90 | 180 | 270; x: number; y: number };
 export function flipItem(item: ItemGeom, axis: "h" | "v"): { flipH?: boolean; flipV?: boolean };
+type Oriented = { crop?: Crop; rotation?: number; flipH?: boolean; flipV?: boolean };
+/** Potongan per sisi terlihat (isian angka) dari potongan per sisi sumber. */
+export function visibleCrop(item: Oriented): Crop;
+/** Isian per sisi terlihat → potongan per sisi sumber yang disimpan. */
+export function sourceCrop(item: Oriented, visibleSides: Crop): Crop;

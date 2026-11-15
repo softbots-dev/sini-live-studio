@@ -2,7 +2,7 @@ import type { Translate } from "../i18n";
 
 /* Event dari hub widget (src/main/widgets/hub.mjs) — bentuknya kontrak antara proses utama dan halaman ini. */
 export type Sender = { name: string; avatarUrl: string | null; anonymous: boolean };
-export type AlertData = { id: string; sender: Sender; name: string; icon: string | null; quantity: number; soundUrl: string | null; silent: boolean; durationMs: number; sample?: boolean };
+export type AlertData = { id: string; sender: Sender; name: string; icon: string | null; quantity: number; soundUrl: string | null; silent: boolean; durationMs: number; sample?: boolean; resume?: boolean };
 export type ChatLine = { id: string; kind: "text" | "gift" | "follow" | "member"; name: string; anonymous: boolean; color: string; body: string; gift?: { name: string; icon: string | null; quantity: number }; sample?: boolean };
 export type RankRow = { name: string; avatarUrl: string | null; coins: number };
 export type CountdownState = { running: boolean; remainingMs: number; at: number };

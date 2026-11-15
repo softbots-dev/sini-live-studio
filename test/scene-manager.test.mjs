@@ -228,3 +228,38 @@ test("widget penghitung: +1, −1, atur ulang — tersimpan", () => {
   assert.equal(m.counter(sourceId, "reset"), 0);
   assert.throws(() => m.counter("tidak-ada", "inc"), /source_missing/);
 });
+
+test("satu item rusak tidak menghentikan putar ulang item lain", () => {
+  const { m, engine } = manager();
+  m.apply();
+  const a = m.addSource("text_gdiplus", "A", {}).itemId;
+  const b = m.addSource("text_gdiplus", "B", {}).itemId;
+  m.setItem(a, { flipH: true });
+  m.setItem(b, { flipV: true });
+  const applied = [];
+  engine.setItem = (scene, itemId) => {
+    if (itemId === a) throw new Error("rusak");
+    applied.push(itemId);
+  };
+  m.reapplyOriented();
+  assert.deepEqual(applied, [b]);
+});
+
+test("pengaturan sumber disaring per jenis: Tautan & Teks tidak bisa membaca berkas lokal", async () => {
+  const { sanitizeSourceSettings } = await import("../src/main/scene-manager.mjs");
+  assert.deepEqual(sanitizeSourceSettings("browser_source", { url: "https://a.b", width: 800, height: 600, reroute_audio: true, is_local_file: true, local_file: "C:/x.html", css: "x", webpage_control_level: 5 }), { url: "https://a.b", width: 800, height: 600, reroute_audio: true });
+  assert.deepEqual(sanitizeSourceSettings("text_gdiplus", { text: "hai", font: { size: 9 }, color: 1, read_from_file: true, file: "C:/rahasia.txt" }), { text: "hai", font: { size: 9 }, color: 1 });
+  assert.deepEqual(sanitizeSourceSettings("dshow_input", { video_device_id: "x" }), { video_device_id: "x" });
+  const { m, engine } = manager();
+  m.apply();
+  const { sourceId } = m.addSource("browser_source", "L", { url: "https://a.b", is_local_file: true });
+  m.updateSource(sourceId, { local_file: "C:/x.html", url: "https://c.d" });
+  const sent = engine.calls.filter((c) => c[0] === "createSource" || c[0] === "updateSource").map((c) => c.at(-1));
+  for (const s of sent) assert.ok(!("is_local_file" in s) && !("local_file" in s), JSON.stringify(s));
+  assert.equal(m.snapshot().sources.find((s) => s.id === sourceId).settings.url, "https://c.d");
+});
+
+test("pengaturan Video disaring: hanya berkas lokal, tidak bisa jadi alamat jaringan", async () => {
+  const { sanitizeSourceSettings } = await import("../src/main/scene-manager.mjs");
+  assert.deepEqual(sanitizeSourceSettings("ffmpeg_source", { local_file: "C:/v/a.mp4", is_local_file: false, input: "rtmp://x", looping: true, restart_on_activate: true }), { local_file: "C:/v/a.mp4", is_local_file: true, looping: true, restart_on_activate: true });
+});

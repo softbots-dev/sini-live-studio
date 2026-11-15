@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Eye, EyeOff, Lock, LockOpen, Plus, Settings2, SlidersHorizontal, Trash2 } from "lucide-react";
 import type { Collection, Scene, Source } from "../screens/Studio";
 import { useT } from "../i18n";
@@ -8,6 +8,7 @@ import { iconForSource, WIDGET_KIND, type UiKind } from "../kinds";
 import { WidgetFields } from "./WidgetFields";
 import { AddSourceDialog } from "./AddSourceDialog";
 import { Button, Dialog, Field, IconButton } from "../ui";
+import { sourceCrop, visibleCrop } from "../lib/transform.mjs";
 
 const FILTERS = ["color_filter", "crop_filter", "chroma_key_filter", "noise_suppress_filter", "noise_gate_filter", "gain_filter", "compressor_filter"] as const;
 const AUDIO_ONLY = new Set(["wasapi_input_capture", "wasapi_output_capture"]);
@@ -110,7 +111,8 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
   const [name, setName] = useState(source.name);
   const [settings, setSettings] = useState<Record<string, unknown>>(source.settings);
   const [options, setOptions] = useState<{ name: string; value: string | number }[]>([]);
-  const [crop, setCrop] = useState(item?.crop ?? { left: 0, right: 0, top: 0, bottom: 0 });
+  // Isian potong memakai sisi TERLIHAT (item bisa diputar/dicermin); disimpan per sisi sumber.
+  const [crop, setCrop] = useState(() => visibleCrop(item ?? {}));
   const listProp: Record<string, string> = {
     dshow_input: "video_device_id",
     monitor_capture: "monitor_id",
@@ -127,15 +129,24 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
   }, [prop, source.id]);
 
   const [updateError, setUpdateError] = useState<string | null>(null);
+  // Simpanan terakhir yang masih berjalan: Selesai menunggunya (isian Tautan tersimpan saat fokus pindah,
+  // yaitu tepat saat tombol Selesai ditekan) — alamat yang ditolak membuat dialog tetap terbuka.
+  const pending = useRef<Promise<boolean>>(Promise.resolve(true));
   const set = (patch: Record<string, unknown>) => {
     const next = { ...settings, ...patch };
     setSettings(next);
-    void window.studio.invoke<Result>("source.update", source.id, source.kind === WIDGET_KIND ? patch : next).then((r) => setUpdateError(r && !r.ok && ["url_https_only", "file_missing"].includes(r.code) ? t(`studio.app.err.${r.code}`) : null));
+    pending.current = window.studio.invoke<Result>("source.update", source.id, source.kind === WIDGET_KIND ? patch : next).then((r) => {
+      const failed = Boolean(r && !r.ok && ["url_https_only", "file_missing"].includes(r.code));
+      setUpdateError(failed && r && !r.ok ? t(`studio.app.err.${r.code}`) : null);
+      return !failed;
+    });
   };
 
-  const save = () => {
+  const save = async () => {
+    await new Promise((r) => setTimeout(r, 0)); // biarkan blur isian menjalankan set() dulu
+    if (!(await pending.current)) return;
     if (name.trim() && name.trim() !== source.name) void window.studio.invoke("source.rename", source.id, name.trim());
-    if (item && !AUDIO_ONLY.has(source.kind)) void window.studio.invoke("item.set", item.id, { crop });
+    if (item && !AUDIO_ONLY.has(source.kind)) void window.studio.invoke("item.set", item.id, { crop: sourceCrop(item, crop) });
     onClose();
   };
 
@@ -148,7 +159,7 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
       onClose={onClose}
       wide
       footer={
-        <Button variant="primary" onClick={save}>
+        <Button variant="primary" onClick={() => void save()}>
           {t("studio.app.done")}
         </Button>
       }
@@ -210,7 +221,7 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
             <p className="hint">{settings.local_file ? String(settings.local_file) : t("studio.app.prop.noVideo")}</p>
             <Button
               onClick={async () => {
-                const file = await window.studio.invoke<string | null>("source.pickVideo");
+                const file = await window.studio.invoke<string | null>("source.pickVideo", t("studio.app.files.video"));
                 if (file) set({ local_file: file, is_local_file: true });
               }}
             >
@@ -234,7 +245,7 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
           <p className="hint">{settings.file ? String(settings.file) : t("studio.app.prop.noFile")}</p>
           <Button
             onClick={async () => {
-              const file = await window.studio.invoke<string | null>("source.pickImage");
+              const file = await window.studio.invoke<string | null>("source.pickImage", t("studio.app.files.image"));
               if (file) set({ file });
             }}
           >

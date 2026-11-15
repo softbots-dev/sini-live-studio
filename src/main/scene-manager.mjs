@@ -30,6 +30,25 @@ export function validateSourceSettings(kind, settings = {}) {
   return { ok: true };
 }
 
+/*
+  Daftar-izin pengaturan dari renderer untuk jenis yang bisa membaca berkas lokal lewat pengaturan tersembunyi
+  (sumber browser `is_local_file`/`local_file`/`css`/`webpage_control_level`, teks `read_from_file`/`file`).
+  Renderer tepercaya, tapi proses utama tetap tidak meneruskan apa yang tidak pernah dikirim UI.
+*/
+const SETTINGS_ALLOW = {
+  browser_source: ["url", "width", "height", "reroute_audio"],
+  text_gdiplus: ["text", "font", "color"],
+  ffmpeg_source: ["local_file", "is_local_file", "looping", "restart_on_activate"],
+};
+export function sanitizeSourceSettings(kind, settings = {}) {
+  const allow = SETTINGS_ALLOW[kind];
+  if (!allow) return settings;
+  const out = Object.fromEntries(Object.entries(settings ?? {}).filter(([k]) => allow.includes(k)));
+  // Video hanya dari berkas lokal — tidak pernah alamat jaringan lewat `input`.
+  if (kind === "ffmpeg_source") out.is_local_file = true;
+  return out;
+}
+
 /**
  * `widgetSource(sourceId, settings)` → { kind: "browser_source", settings } — sumber `sini_widget` disimpan
  * apa adanya di koleksi, tapi mesin menerima sumber browser ber-URL lokal yang dibuat saat jalan.
@@ -152,6 +171,7 @@ export function createSceneManager({ engine, load, save, newId, widgetSource = n
       const sourceId = newId("source");
       const itemId = newId("item");
       if (kind === WIDGET_KIND) settings = normalizeWidget(settings);
+      settings = sanitizeSourceSettings(kind, settings);
       createInEngine(sourceId, kind, settings);
       const src = { id: sourceId, kind, name: String(name ?? "").slice(0, 80), settings, volume: 1, muted: false, monitoring: "none", filters: [] };
       state.sources.push(src);
@@ -165,7 +185,7 @@ export function createSceneManager({ engine, load, save, newId, widgetSource = n
     updateSource(id, settings) {
       const s = source(id);
       if (!s) throw fail("source_missing");
-      s.settings = { ...s.settings, ...settings };
+      s.settings = sanitizeSourceSettings(s.kind, { ...s.settings, ...settings });
       if (s.kind === WIDGET_KIND) s.settings = normalizeWidget(s.settings);
       engine.updateSource(id, engineSource(id, s.kind, s.settings).settings);
       persist();
@@ -220,7 +240,15 @@ export function createSceneManager({ engine, load, save, newId, widgetSource = n
 
     /** Terapkan ulang item diputar/dicermin — posisi acuan tengahnya bergantung ukuran sumber. */
     reapplyOriented() {
-      for (const sc of state.scenes) for (const item of sc.items) if (isOriented(item)) engine.setItem(sc.id, item.id, transform(item));
+      for (const sc of state.scenes)
+        for (const item of sc.items) {
+          if (!isOriented(item)) continue;
+          try {
+            engine.setItem(sc.id, item.id, transform(item));
+          } catch {
+            // satu item rusak tidak menghentikan yang lain
+          }
+        }
     },
 
     /** "up"/"down" = satu lapisan, "top"/"bottom" = paling atas/bawah. */

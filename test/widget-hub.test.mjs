@@ -224,3 +224,105 @@ test("alert kombo per AKUN, bukan per nama tampilan: dua \"Budi\" berbeda tidak 
   h.onRealtime(g("c", "u1"));
   assert.deepEqual(alert.filter((e) => e[0] === "alert.update").map((e) => e[1]), [{ id: "a", quantity: 2 }]);
 });
+
+test("alert yang sedang tampil dikirim ulang ke halaman yang baru tersambung bertanda resume (tanpa suara lagi)", () => {
+  const { h, sub } = hub();
+  h.setWidgets([W.alert]);
+  const live = sub("w-alert");
+  h.onRealtime(msg("g1", "gift", { gift: { id: "rose", name: "Mawar", icon: "x", quantity: 1, coinValue: 10 } }));
+  assert.equal(live.find((e) => e[0] === "alert.show")[1].resume, undefined);
+  const late = sub("w-alert");
+  assert.equal(late.find((e) => e[0] === "alert.show")[1].resume, true);
+});
+
+test("hitung mundur yang habis mengirim keadaan berhenti ke halaman dan ke proses utama", () => {
+  const c = clock();
+  const done = [];
+  const h = createWidgetHub({ ...c, absUrl: (u) => u, soundFor: () => null, onCountdown: (id, s) => done.push([id, s.running, s.remainingMs]) });
+  h.setWidgets([{ ...W.cd, settings: { ...W.cd.settings, durationSec: 10 } }]);
+  const got = [];
+  h.subscribe("w-cd", (event, data) => got.push([event, data]));
+  h.countdown("w-cd", "toggle");
+  c.advance(4000);
+  h.countdown("w-cd", "toggle"); // jeda: timer habis dibatalkan
+  c.advance(20_000);
+  assert.equal(done.length, 0);
+  h.countdown("w-cd", "toggle");
+  c.advance(6000);
+  assert.deepEqual(got.at(-1)[1].running, false);
+  assert.equal(got.at(-1)[1].remainingMs, 0);
+  assert.deepEqual(done, [["w-cd", false, 0]]);
+});
+
+test("pesan gift yang dihapus moderator membatalkan alertnya; kombo hanya berkurang", () => {
+  const { c, h, sub } = hub();
+  h.setWidgets([W.alert]);
+  const alert = sub("w-alert");
+  const g = (id, userId) => ({ type: "chat.message", data: { id, type: "gift", user: { id: userId, username: userId, displayName: userId, color: "#fff" }, body: "", gift: { id: "rose", name: "Mawar", icon: "x", quantity: 1, coinValue: 10 } } });
+  h.onRealtime(g("a", "u1"));
+  h.onRealtime(g("b", "u1")); // kombo ×2
+  h.onRealtime(g("c", "u2")); // menunggu
+  h.onRealtime({ type: "chat.deleted", data: { messageId: "b" } });
+  assert.deepEqual(alert.filter((e) => e[0] === "alert.update").at(-1)[1], { id: "a", quantity: 1 });
+  h.onRealtime({ type: "chat.deleted", data: { messageId: "c" } }); // yang menunggu dibuang
+  h.onRealtime({ type: "chat.deleted", data: { messageId: "a" } }); // yang tampil disembunyikan
+  assert.deepEqual(alert.at(-1), ["alert.hide", { id: "a" }]);
+  c.advance(30_000);
+  assert.equal(alert.filter((e) => e[0] === "alert.show").length, 1);
+});
+
+test("chat.cleared karena BLOKIR membatalkan alert pengguna itu; timeout tidak (gift-nya tetap sah)", () => {
+  const { c, h, sub } = hub();
+  h.setWidgets([W.alert]);
+  const alert = sub("w-alert");
+  const g = (id, userId) => ({ type: "chat.message", data: { id, type: "gift", user: { id: userId, username: userId, displayName: userId, color: "#fff" }, body: "", gift: { id: "rose", name: "Mawar", icon: "x", quantity: 1, coinValue: 10 } } });
+  h.onRealtime(g("a", "u1"));
+  h.onRealtime(g("b", "u2"));
+  h.onRealtime(g("c", "u3"));
+  h.onRealtime({ type: "chat.cleared", data: { userId: "u2", ban: { type: "ban", until: null } } });
+  h.onRealtime({ type: "chat.cleared", data: { userId: "u3", ban: { type: "timeout", until: "2026-01-01T00:00:00Z" } } });
+  c.advance(30_000);
+  assert.deepEqual(alert.filter((e) => e[0] === "alert.show").map((e) => e[1].id), ["a", "c"]);
+});
+
+test("chatbox tanpa event tetap penuh: event tidak memakan jatah baris pesan", () => {
+  const { h, sub } = hub();
+  const chatOnly = { ...W.chat, settings: { ...W.chat.settings, showEvents: false } };
+  h.setWidgets([chatOnly]);
+  const chat = sub("w-chat");
+  for (const id of ["t1", "t2", "t3"]) h.onRealtime(msg(id, "message"));
+  for (let i = 0; i < 20; i++) h.onRealtime(msg(`f${i}`, "follow"));
+  assert.deepEqual(chat.at(-1)[1].lines.map((l) => l.id), ["t1", "t2", "t3"]);
+});
+
+test("pindah room: baris chat & antrean alert room lama dibuang", () => {
+  const { h, sub } = hub();
+  h.setWidgets([W.chat]);
+  const chat = sub("w-chat");
+  h.onRealtime(msg("m1", "message"));
+  h.roomChanged();
+  assert.deepEqual(chat.at(-1)[1].lines, []);
+  h.onRealtime(msg("m1", "message")); // id lama boleh muncul lagi di room baru
+  assert.deepEqual(chat.at(-1)[1].lines.map((l) => l.id), ["m1"]);
+});
+
+test("timer habis yang menyala terlalu cepat (jam bergeser) dipasang ulang, tidak mengirim running:true", () => {
+  const c = clock();
+  const done = [];
+  let early = true;
+  const setTimer = (fn, ms) => {
+    const at = early ? ms - 1000 : ms;
+    early = false;
+    return c.setTimer(fn, at);
+  };
+  const h = createWidgetHub({ ...c, setTimer, absUrl: (u) => u, soundFor: () => null, onCountdown: (id, s) => done.push(s.running) });
+  h.setWidgets([{ ...W.cd, settings: { ...W.cd.settings, durationSec: 10 } }]);
+  const got = [];
+  h.subscribe("w-cd", (event, data) => got.push([event, data]));
+  h.countdown("w-cd", "toggle");
+  const before = got.length;
+  c.advance(10_000);
+  const after = got.slice(before).map((e) => e[1].running);
+  assert.deepEqual(after, [false]);
+  assert.deepEqual(done, [false]);
+});

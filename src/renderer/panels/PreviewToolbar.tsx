@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, ChevronDown, Crop, FlipHorizontal2, Maximize2, Move, RotateCw, Settings2, SlidersHorizontal, Trash2 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { Collection, Scene } from "../screens/Studio";
 import { useT } from "../i18n";
 import { flipEntries, isVisual, loadGeometry, presetEntries, runItemAction, POSITION_PRESETS, SIZE_PRESETS, type ItemContext } from "../item-menu";
@@ -15,6 +15,27 @@ export function PreviewToolbar({ collection, scene, selected, cropMode, onCropMo
   const item = scene?.items.find((i) => i.id === selected) ?? null;
   const source = item ? collection?.sources.find((s) => s.id === item.sourceId) ?? null : null;
   const visualKind = source ? !["wasapi_input_capture", "wasapi_output_capture"].includes(source.kind) : false;
+  // Putar butuh ukuran sumber (pusat putaran); sumber yang belum tampil (mis. jendela tertutup) belum punya.
+  const [hasSize, setHasSize] = useState(true);
+  const itemId = item?.id ?? null;
+  useEffect(() => {
+    if (!itemId) return;
+    let alive = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    // Selama belum punya ukuran, periksa lagi tiap detik (mis. jendela yang ditangkap baru dibuka).
+    const check = () =>
+      void loadGeometry(itemId).then((g) => {
+        if (!alive) return;
+        const ok = Boolean(g.size && g.size.width > 0 && g.size.height > 0);
+        setHasSize(ok);
+        if (!ok) timer = setTimeout(check, 1000);
+      });
+    check();
+    return () => {
+      alive = false;
+      if (timer) clearTimeout(timer);
+    };
+  }, [itemId, scene]);
   if (!item || !source || !scene || !visualKind) return <div className="ptool-row" aria-hidden />;
 
   const locked = item.locked;
@@ -44,7 +65,7 @@ export function PreviewToolbar({ collection, scene, selected, cropMode, onCropMo
         <Tool label={t("studio.app.tb.fit")} icon={<Maximize2 aria-hidden />} dropdown disabled={locked} onClick={() => void menu((c) => presetEntries(t, SIZE_PRESETS, isVisual(c)))} />
         <Tool label={t("studio.app.tb.position")} icon={<Move aria-hidden />} dropdown disabled={locked} onClick={() => void menu((c) => presetEntries(t, POSITION_PRESETS, isVisual(c)))} />
         <Tool label={t("studio.app.tb.crop")} icon={<Crop aria-hidden />} pressed={cropMode} disabled={locked} onClick={() => onCropMode(!cropMode)} />
-        <Tool label={t("studio.app.tb.rotate")} icon={<RotateCw aria-hidden />} disabled={locked} onClick={() => void run("rotate")} />
+        <Tool label={t("studio.app.tb.rotate")} icon={<RotateCw aria-hidden />} disabled={locked || !hasSize} onClick={() => void run("rotate")} />
         <Tool label={t("studio.app.tb.flip")} icon={<FlipHorizontal2 aria-hidden />} dropdown disabled={locked} onClick={() => void menu((c) => flipEntries(t, item, isVisual(c)))} />
         <span className="ptool-sep" aria-hidden />
         <Tool label={t("studio.app.moveUp")} icon={<ArrowUp aria-hidden />} disabled={index === scene.items.length - 1} onClick={() => void run("up")} />

@@ -95,3 +95,8 @@ test("events: SSE dari hub; koneksi ditutup → unsubscribe", async () => {
   for (let i = 0; i < 50 && !unsubscribed.includes("src-9"); i++) await new Promise((r) => setTimeout(r, 20));
   assert.ok(unsubscribed.includes("src-9"));
 });
+
+test("halaman tidak membocorkan alamatnya lewat Referer", async () => {
+  const page = await get(`/w/${TOKEN}/widget.html?id=x&type=counter`);
+  assert.equal(page.headers["referrer-policy"], "no-referrer");
+});

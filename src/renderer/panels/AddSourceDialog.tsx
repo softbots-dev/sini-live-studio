@@ -3,6 +3,7 @@ import { useT } from "../i18n";
 import { Button, Dialog, Field } from "../ui";
 import { KIND_META, SOURCE_DEFAULTS, UI_KINDS, type UiKind } from "../kinds";
 import type { Result } from "../store";
+import { useWidgetsAvailable } from "./WidgetFields";
 
 const ERRORS = new Set(["url_https_only", "file_missing"]);
 
@@ -17,6 +18,7 @@ export function AddSourceDialog({ onClose, onAdded }: { onClose: () => void; onA
   const [url, setUrl] = useState("https://");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const widgetsAvailable = useWidgetsAvailable();
   const meta = KIND_META[pick];
   const Icon = meta.icon;
 
@@ -24,7 +26,7 @@ export function AddSourceDialog({ onClose, onAdded }: { onClose: () => void; onA
     setError(null);
     let settings: Record<string, unknown> = { ...(SOURCE_DEFAULTS[meta.kind] ?? {}) };
     if (pick === "video") {
-      const file = await window.studio.invoke<string | null>("source.pickVideo");
+      const file = await window.studio.invoke<string | null>("source.pickVideo", t("studio.app.files.video"));
       if (!file) return;
       settings = { ...settings, local_file: file, is_local_file: true, looping: true, restart_on_activate: true };
     }
@@ -43,6 +45,11 @@ export function AddSourceDialog({ onClose, onAdded }: { onClose: () => void; onA
   const group = (g: "video" | "audio" | "widget") => (
     <div className="addsrc-group">
       <h3 className="addsrc-group-title">{t(`studio.app.group.${g}`)}</h3>
+      {g === "widget" && !widgetsAvailable && (
+        <p className="msg-warn" role="alert">
+          {t("studio.app.widget.unavailable")}
+        </p>
+      )}
       <div className="addsrc-grid" role="radiogroup" aria-label={t(`studio.app.group.${g}`)}>
         {UI_KINDS.filter((k) => KIND_META[k].group === g).map((k) => {
           const KIcon = KIND_META[k].icon;

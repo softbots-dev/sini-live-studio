@@ -5,13 +5,19 @@
   disimpan — dibuat ulang tiap studio jalan.
 */
 import http from "node:http";
-import { randomBytes } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".woff2": "font/woff2", ".woff": "font/woff", ".ttf": "font/ttf", ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp" };
 const ASSET = /^[A-Za-z0-9_-][A-Za-z0-9_.-]*$/;
 const KEEPALIVE_MS = 15_000;
+/** Token dibandingkan dengan waktu tetap (tidak membocorkan berapa karakter yang cocok). */
+const sameToken = (a, b) => {
+  const x = Buffer.from(String(a ?? ""));
+  const y = Buffer.from(b);
+  return x.length === y.length && timingSafeEqual(x, y);
+};
 
 export function createWidgetServer({ hub, staticDir, origin, token = randomBytes(16).toString("hex") }) {
   let server = null;
@@ -50,7 +56,7 @@ export function createWidgetServer({ hub, staticDir, origin, token = randomBytes
     } catch {
       return notFound(res);
     }
-    res.writeHead(200, { "content-type": type, "content-length": body.length, "cache-control": "no-store", "content-security-policy": csp, "x-content-type-options": "nosniff" });
+    res.writeHead(200, { "content-type": type, "content-length": body.length, "cache-control": "no-store", "content-security-policy": csp, "x-content-type-options": "nosniff", "referrer-policy": "no-referrer" });
     res.end(body);
   }
 
@@ -76,7 +82,7 @@ export function createWidgetServer({ hub, staticDir, origin, token = randomBytes
     const raw = req.url ?? "";
     const q = raw.indexOf("?");
     const parts = segments(q === -1 ? raw : raw.slice(0, q));
-    if (!parts || parts[0] !== "w" || parts[1] !== token) return notFound(res);
+    if (!parts || parts[0] !== "w" || !sameToken(parts[1], token)) return notFound(res);
     const rest = parts.slice(2);
     if (rest.length === 1 && rest[0] === "widget.html") return void sendFile(res, "widget.html");
     if (rest.length === 2 && rest[0] === "assets" && ASSET.test(rest[1])) return void sendFile(res, `assets/${rest[1]}`);

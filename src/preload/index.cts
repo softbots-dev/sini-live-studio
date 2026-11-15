@@ -13,9 +13,9 @@ const INVOKE = new Set([
   "audio.volume", "audio.mute", "audio.monitor", "filters.set",
   "display.bounds", "display.hide", "display.area", "menu.popup", "overlay.draw", "canvas.get", "settings.get", "settings.setEncoder",
   "chat.get", "chat.send", "chat.delete", "chat.ban", "quit.confirm", "quit.cancel",
-  "widget.test", "widget.counter", "widget.countdown", "widget.countdownState",
+  "widget.test", "widget.counter", "widget.countdown", "widget.countdownState", "widget.available",
 ]);
-const EVENTS = new Set(["account", "engine", "link.code", "broadcast", "stats", "volmeter", "scenes", "chat", "chat.rejected", "quit.ask", "perf", "locale"]);
+const EVENTS = new Set(["account", "engine", "link.code", "broadcast", "stats", "volmeter", "scenes", "chat", "chat.rejected", "quit.ask", "perf", "locale", "widget.countdown"]);
 
 const studio = {
   invoke: (channel: string, ...args: unknown[]): Promise<any> => {

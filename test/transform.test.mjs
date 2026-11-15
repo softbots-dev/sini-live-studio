@@ -107,7 +107,7 @@ test("preset: pas ke layar (rasio dijaga, di tengah), regangkan, tengahkan, atur
   const center = presetTransform("center", base, size, canvas);
   assert.deepEqual([center.x, center.y], [Math.round((1920 - 500) / 2), Math.round((1080 - 250) / 2)]);
   assert.equal(center.scaleX, undefined);
-  assert.deepEqual(presetTransform("reset", base, size, canvas), { x: 0, y: 0, scaleX: 1, scaleY: 1, crop: { left: 0, right: 0, top: 0, bottom: 0 } });
+  assert.deepEqual(presetTransform("reset", base, size, canvas), { x: 0, y: 0, scaleX: 1, scaleY: 1, crop: { left: 0, right: 0, top: 0, bottom: 0 }, rotation: 0, flipH: false, flipV: false });
 });
 
 test("preset pas ke layar memperhitungkan potongan", () => {
@@ -196,4 +196,16 @@ test("preset posisi: rata kiri/kanan/atas/bawah dan tengah satu sumbu", () => {
   assert.deepEqual(presetTransform("centerV", base, size, canvas), { y: 415 });
   const rotated = presetTransform("fit", { ...base, rotation: 90 }, size, canvas);
   close(rotated.scaleX, 1080 / 1000); // 90°: tinggi terlihat = lebar sumber
+});
+
+test("isian potong memakai sisi TERLIHAT: item diputar/dicermin dipetakan ke sisi sumber dan kembali", async () => {
+  const { visibleCrop, sourceCrop } = await import("../src/renderer/lib/transform.mjs");
+  const crop = { left: 10, right: 20, top: 30, bottom: 40 };
+  assert.deepEqual(visibleCrop({ crop, rotation: 0 }), crop);
+  // 90° searah jarum jam: sisi kiri sumber jadi atas terlihat.
+  assert.deepEqual(visibleCrop({ crop, rotation: 90 }), { top: 10, right: 30, bottom: 20, left: 40 });
+  assert.deepEqual(visibleCrop({ crop, flipH: true }), { left: 20, right: 10, top: 30, bottom: 40 });
+  for (const item of [{ rotation: 90 }, { rotation: 180, flipV: true }, { rotation: 270, flipH: true }]) {
+    assert.deepEqual(sourceCrop(item, visibleCrop({ ...item, crop })), crop, JSON.stringify(item));
+  }
 });

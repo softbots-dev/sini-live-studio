@@ -16,7 +16,8 @@ export function AlertWidget({ t, settings, on }: WidgetProps) {
         if (timer) clearTimeout(timer);
         setLeaving(false);
         setAlert(a);
-        if (settings.sound === false || a.silent) return;
+        // resume = halaman tersambung ulang di tengah alert: suaranya sudah diputar.
+        if (settings.sound === false || a.silent || a.resume) return;
         if (a.soundUrl) void new Audio(a.soundUrl).play().catch(() => chime());
         else chime();
       }),

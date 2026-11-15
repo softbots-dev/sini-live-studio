@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AudioLines, Layers, Mic, MicOff, Plus, Radio, Square, Volume2, VolumeX } from "lucide-react";
 import type { Collection, Scene } from "../screens/Studio";
 import { useT } from "../i18n";
-import { sourceDialogStore, useMainState } from "../store";
+import { sourceDialogStore, useMainState, type Result } from "../store";
 import { Button, Dialog, IconButton } from "../ui";
 import { MixerPanel, meter } from "./Mixer";
 import { openSceneMenu } from "./Scenes";
@@ -40,14 +40,14 @@ export function useDuration(since: string | null | undefined) {
   Slider cepat untuk sumber audio PERTAMA berjenis `kind` di scene aktif (audio komputer / mikrofon), dengan
   meter level di dalam trek; klik ikon = bisu. Tanpa sumber itu: tombol kecil untuk menambahkannya langsung.
 */
-function QuickAudio({ kind, collection, scene, levels }: { kind: "wasapi_output_capture" | "wasapi_input_capture"; collection: Collection; scene: Scene; levels: Record<string, number[]> }) {
+function QuickAudio({ kind, collection, scene, levels, onError }: { kind: "wasapi_output_capture" | "wasapi_input_capture"; collection: Collection; scene: Scene; levels: Record<string, number[]>; onError: (code: string | null) => void }) {
   const { t } = useT();
   const used = new Set(scene.items.map((i) => i.sourceId));
   const src = collection.sources.find((s) => s.kind === kind && used.has(s.id));
   const mic = kind === "wasapi_input_capture";
   if (!src) {
     return (
-      <Button size="sm" variant="ghost" icon={mic ? <Mic aria-hidden /> : <Volume2 aria-hidden />} onClick={() => void window.studio.invoke("source.add", kind, t(mic ? "studio.app.ui.mic" : "studio.app.ui.desktopAudio"), SOURCE_DEFAULTS[kind] ?? {})}>
+      <Button size="sm" variant="ghost" icon={mic ? <Mic aria-hidden /> : <Volume2 aria-hidden />} onClick={() => void window.studio.invoke<Result>("source.add", kind, t(mic ? "studio.app.ui.mic" : "studio.app.ui.desktopAudio"), SOURCE_DEFAULTS[kind] ?? {}).then((r) => onError(r && !r.ok ? r.code : null))}>
         {mic ? t("studio.app.addMic") : t("studio.app.addDesktopAudio")}
       </Button>
     );
@@ -77,6 +77,12 @@ export function ControlBar({ broadcast, title, category, collection, scene }: { 
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [confirmLive, setConfirmLive] = useState(false);
   const [mixerOpen, setMixerOpen] = useState(false);
+  const [quickError, setQuickError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!quickError) return;
+    const id = setTimeout(() => setQuickError(null), 6000);
+    return () => clearTimeout(id);
+  }, [quickError]);
   const duration = useDuration(broadcast.phase === "live" ? broadcast.liveSince : null);
   const active = ACTIVE.has(broadcast.phase);
   const nf = new Intl.NumberFormat(locale);
@@ -88,7 +94,10 @@ export function ControlBar({ broadcast, title, category, collection, scene }: { 
   };
 
   let message: { tone: "warn" | "error" | "info"; text: string; action?: { label: string; run: () => void } } | null = null;
-  if (broadcast.phase === "blocked" && broadcast.reason) {
+  // Jawaban atas tombol yang baru ditekan (6 dtk) didahulukan dari pesan keadaan yang menetap.
+  if (quickError) {
+    message = { tone: "warn", text: quickError === "scene_full" ? t("studio.app.sceneFull") : t("studio.app.chat.actionFailed") };
+  } else if (broadcast.phase === "blocked" && broadcast.reason) {
     const action =
       broadcast.reason === "not_streamer"
         ? { label: t("studio.app.becomeStreamer"), run: () => void window.studio.invoke("open.web", "/become-streamer/") }
@@ -122,8 +131,8 @@ export function ControlBar({ broadcast, title, category, collection, scene }: { 
         <span className="vsep" aria-hidden />
         {collection && scene && (
           <>
-            <QuickAudio kind="wasapi_output_capture" collection={collection} scene={scene} levels={levels} />
-            <QuickAudio kind="wasapi_input_capture" collection={collection} scene={scene} levels={levels} />
+            <QuickAudio kind="wasapi_output_capture" collection={collection} scene={scene} levels={levels} onError={setQuickError} />
+            <QuickAudio kind="wasapi_input_capture" collection={collection} scene={scene} levels={levels} onError={setQuickError} />
           </>
         )}
         <IconButton label={t("studio.app.mixer")} icon={<AudioLines aria-hidden />} disabled={!collection} onClick={() => setMixerOpen(true)} />
