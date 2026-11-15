@@ -8,7 +8,7 @@ const INVOKE = new Set([
   "app.locale", "app.info", "account.get", "engine.get", "link.start", "link.cancel", "account.signOut", "open.web",
   "catalog.categories", "broadcast.get", "broadcast.check", "broadcast.start", "broadcast.end",
   "scenes.get", "scene.add", "scene.rename", "scene.remove", "scene.activate", "orientation.set",
-  "source.add", "source.update", "source.rename", "source.options", "source.pickImage",
+  "source.add", "source.update", "source.rename", "source.options", "source.pickImage", "source.pickVideo",
   "item.set", "item.move", "item.remove", "item.select", "item.sizes",
   "audio.volume", "audio.mute", "audio.monitor", "filters.set",
   "display.bounds", "display.hide", "display.area", "menu.popup", "overlay.draw", "canvas.get", "settings.get", "settings.setEncoder",

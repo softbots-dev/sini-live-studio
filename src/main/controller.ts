@@ -12,7 +12,7 @@ import { runLink, siteLocale } from "./link.mjs";
 import { liveMaintenance } from "./maintenance.mjs";
 import { menuTemplate } from "./menu.mjs";
 import { createSelectionOverlay, type Frame } from "./overlay.js";
-import { CANVAS, createSceneManager } from "./scene-manager.mjs";
+import { CANVAS, createSceneManager, validateSourceSettings } from "./scene-manager.mjs";
 import { sessionStore } from "./session-store.js";
 import { ObsEngine, SOURCE_KINDS, type FilterKind, type Profile, type SourceKind } from "./engine/obs.js";
 
@@ -42,6 +42,14 @@ export function startController(win: BrowserWindow) {
   let engineError: string | null = null;
   let scenes: ReturnType<typeof createSceneManager> | null = null;
   let statsTimer: NodeJS.Timeout | null = null;
+  // Item diputar/dicermin beracuan tengah: posisinya diterapkan ulang saat ukuran sumber berubah.
+  const orientTimer = setInterval(() => {
+    try {
+      scenes?.reapplyOriented();
+    } catch {
+      // mesin belum siap / sudah mati
+    }
+  }, 1000);
 
   const send = (channel: string, payload: unknown) => {
     if (!win.isDestroyed()) win.webContents.send(channel, payload);
@@ -389,11 +397,18 @@ export function startController(win: BrowserWindow) {
 
   handle("source.add", async (kind: SourceKind, name: string, settings: Record<string, unknown>) => {
     if (!SOURCE_KINDS.includes(kind)) return { ok: false, code: "source_kind" };
+    const valid = validateSourceSettings(kind, settings ?? {});
+    if (!valid.ok) return valid;
     const res = guard(() => needScenes().addSource(kind, name, settings ?? {}));
     if (res.ok) void fitItem(res.value.itemId, res.value.sourceId, kind);
     return res;
   });
-  handle("source.update", (id: string, settings: Record<string, unknown>) => guard(() => needScenes().updateSource(id, settings)));
+  handle("source.update", (id: string, settings: Record<string, unknown>) => {
+    const kind = scenes?.snapshot().sources.find((s: { id: string }) => s.id === id)?.kind;
+    const valid = validateSourceSettings(kind, settings ?? {});
+    if (!valid.ok) return valid;
+    return guard(() => needScenes().updateSource(id, settings));
+  });
   handle("source.rename", (id: string, name: string) => guard(() => needScenes().renameSource(id, name)));
   handle("source.options", (id: string, property: string) => {
     try {
@@ -401,6 +416,10 @@ export function startController(win: BrowserWindow) {
     } catch {
       return [];
     }
+  });
+  handle("source.pickVideo", async () => {
+    const r = await dialog.showOpenDialog(win, { properties: ["openFile"], filters: [{ name: "Video", extensions: ["mp4", "mov", "mkv", "webm", "flv", "avi"] }] });
+    return r.canceled ? null : (r.filePaths[0] ?? null);
   });
   handle("source.pickImage", async () => {
     const r = await dialog.showOpenDialog(win, { properties: ["openFile"], filters: [{ name: "Image", extensions: ["png", "jpg", "jpeg", "gif", "webp", "bmp"] }] });
@@ -472,7 +491,7 @@ export function startController(win: BrowserWindow) {
 
   /** Sumber baru dipaskan ke kanvas begitu ukurannya diketahui (kamera/layar/jendela/game). */
   async function fitItem(itemId: string, sourceId: string, kind: SourceKind) {
-    if (!["dshow_input", "monitor_capture", "window_capture", "game_capture", "image_source"].includes(kind)) return;
+    if (!["dshow_input", "monitor_capture", "window_capture", "game_capture", "image_source", "ffmpeg_source", "browser_source"].includes(kind)) return;
     const s = scenes?.snapshot();
     if (!s) return;
     const canvas = CANVAS[s.orientation as "landscape" | "portrait"];
@@ -505,6 +524,7 @@ export function startController(win: BrowserWindow) {
     phase: () => (machine.snapshot() as { phase: string }).phase,
     end: () => machine.end(),
     shutdown() {
+      clearInterval(orientTimer);
       if (statsTimer) clearInterval(statsTimer);
       realtime.disconnect();
       try {

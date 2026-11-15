@@ -4,6 +4,7 @@ import * as osn from "obs-studio-node";
 import { encoderSettings, fitProfile, pickEncoder } from "./encoder.mjs";
 import { MAX_ITEMS_PER_SCENE } from "./collection.mjs";
 import { scrubLogDir } from "./log-scrub.mjs";
+import { obsTransform } from "./item-transform.mjs";
 
 /*
   Pembungkus obs-studio-node (libobs) untuk Sini Live Studio. Berjalan di proses utama; pekerjaan berat
@@ -45,7 +46,14 @@ export interface ItemTransform {
   scaleY: number;
   crop?: { left: number; right: number; top: number; bottom: number };
   visible?: boolean;
+  /** Kelipatan 90°, searah jarum jam. */
+  rotation?: number;
+  flipH?: boolean;
+  flipV?: boolean;
 }
+
+/** Nilai EAlignment obs-studio-node (const enum — ditulis sebagai angka supaya aman di build). */
+const ALIGN = { center: 0, topLeft: 5 } as const;
 
 export interface Stats {
   kbps: number;
@@ -66,6 +74,8 @@ export const SOURCE_KINDS = [
   "wasapi_output_capture",
   "image_source",
   "text_gdiplus",
+  "ffmpeg_source",
+  "browser_source",
 ] as const;
 export type SourceKind = (typeof SOURCE_KINDS)[number];
 
@@ -276,24 +286,27 @@ export class ObsEngine {
     const map = this.items.get(sceneId);
     if (!scene || !map) throw new EngineError("scene_missing");
     if (map.size >= MAX_ITEMS_PER_SCENE) throw new EngineError("scene_full");
+    const src = this.source(sourceId);
     const t = transform ?? { x: 0, y: 0, scaleX: 1, scaleY: 1 };
+    const o = obsTransform(t, { width: src.width, height: src.height });
     // Dengan kanvas, libobs mewajibkan transform awal lengkap.
     const info: osn.ISceneItemInfo = {
       name: itemKey,
-      crop: { left: t.crop?.left ?? 0, right: t.crop?.right ?? 0, top: t.crop?.top ?? 0, bottom: t.crop?.bottom ?? 0 },
-      scaleX: t.scaleX,
-      scaleY: t.scaleY,
+      crop: o.crop,
+      scaleX: o.scale.x,
+      scaleY: o.scale.y,
       visible: t.visible ?? true,
-      x: t.x,
-      y: t.y,
-      rotation: 0,
+      x: o.position.x,
+      y: o.position.y,
+      rotation: o.rotation,
       streamVisible: true,
       recordingVisible: true,
       scaleFilter: osn.EScaleType.Bicubic,
       blendingMode: osn.EBlendingMode.Normal,
       blendingMethod: osn.EBlendingMethod.Default,
     };
-    const item = scene.add(this.source(sourceId), info, this.video ?? undefined);
+    const item = scene.add(src, info, this.video ?? undefined);
+    item.alignment = ALIGN[o.alignment] as osn.EAlignment;
     map.set(itemKey, item.id);
   }
 
@@ -306,10 +319,13 @@ export class ObsEngine {
 
   setItem(sceneId: string, itemKey: string, t: ItemTransform) {
     const item = this.item(sceneId, itemKey);
+    const o = obsTransform(t, { width: item.source.width, height: item.source.height });
     item.deferUpdateBegin();
-    item.position = { x: t.x, y: t.y };
-    item.scale = { x: t.scaleX, y: t.scaleY };
-    if (t.crop) item.crop = { ...t.crop };
+    item.alignment = ALIGN[o.alignment] as osn.EAlignment;
+    item.rotation = o.rotation;
+    item.position = o.position;
+    item.scale = o.scale;
+    item.crop = o.crop;
     if (t.visible !== undefined) item.visible = t.visible;
     item.deferUpdateEnd();
   }

@@ -4,6 +4,7 @@
   membuangnya). Item disimpan dari bawah ke atas (indeks 0 = lapisan paling bawah).
 */
 import { MAX_ITEMS_PER_SCENE, parse, serialize } from "./engine/collection.mjs";
+import { isOriented } from "./engine/item-transform.mjs";
 
 export const CANVAS = { landscape: { width: 1920, height: 1080 }, portrait: { width: 1080, height: 1920 } };
 
@@ -11,6 +12,21 @@ function fail(code) {
   const err = new Error(code);
   err.code = code;
   return err;
+}
+
+/** Pengaturan sumber yang ditolak sebelum masuk mesin: Tautan hanya https, Video wajib berkas. */
+export function validateSourceSettings(kind, settings = {}) {
+  if (kind === "browser_source") {
+    let ok = false;
+    try {
+      ok = new URL(String(settings.url ?? "")).protocol === "https:";
+    } catch {
+      ok = false;
+    }
+    if (!ok) return { ok: false, code: "url_https_only" };
+  }
+  if (kind === "ffmpeg_source" && !(typeof settings.local_file === "string" && settings.local_file.trim())) return { ok: false, code: "file_missing" };
+  return { ok: true };
 }
 
 export function createSceneManager({ engine, load, save, newId }) {
@@ -27,7 +43,7 @@ export function createSceneManager({ engine, load, save, newId }) {
     }
     throw fail("item_missing");
   };
-  const transform = (i) => ({ x: i.x ?? 0, y: i.y ?? 0, scaleX: i.scaleX ?? 1, scaleY: i.scaleY ?? 1, crop: i.crop, visible: i.visible !== false });
+  const transform = (i) => ({ x: i.x ?? 0, y: i.y ?? 0, scaleX: i.scaleX ?? 1, scaleY: i.scaleY ?? 1, crop: i.crop, visible: i.visible !== false, rotation: i.rotation ?? 0, flipH: i.flipH === true, flipV: i.flipV === true });
 
   function applySourceAudio(s) {
     if (typeof s.volume === "number") engine.setVolume(s.id, s.volume);
@@ -122,7 +138,7 @@ export function createSceneManager({ engine, load, save, newId }) {
       engine.createSource(sourceId, kind, settings);
       const src = { id: sourceId, kind, name: String(name ?? "").slice(0, 80), settings, volume: 1, muted: false, monitoring: "none", filters: [] };
       state.sources.push(src);
-      const item = { id: itemId, sourceId, ...place, visible: true, locked: false };
+      const item = { id: itemId, sourceId, ...place, visible: true, locked: false, rotation: 0, flipH: false, flipV: false };
       engine.addItem(sc.id, itemId, sourceId, transform(item));
       sc.items.push(item);
       persist();
@@ -162,8 +178,16 @@ export function createSceneManager({ engine, load, save, newId }) {
       if (patch.crop) item.crop = { left: 0, right: 0, top: 0, bottom: 0, ...patch.crop };
       if (typeof patch.visible === "boolean") item.visible = patch.visible;
       if (typeof patch.locked === "boolean") item.locked = patch.locked;
+      if ([0, 90, 180, 270].includes(patch.rotation)) item.rotation = patch.rotation;
+      if (typeof patch.flipH === "boolean") item.flipH = patch.flipH;
+      if (typeof patch.flipV === "boolean") item.flipV = patch.flipV;
       engine.setItem(sc.id, itemId, transform(item));
       persist();
+    },
+
+    /** Terapkan ulang item diputar/dicermin — posisi acuan tengahnya bergantung ukuran sumber. */
+    reapplyOriented() {
+      for (const sc of state.scenes) for (const item of sc.items) if (isOriented(item)) engine.setItem(sc.id, item.id, transform(item));
     },
 
     /** "up"/"down" = satu lapisan, "top"/"bottom" = paling atas/bawah. */

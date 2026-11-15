@@ -132,3 +132,48 @@ test("urutan lapisan: paling atas / paling bawah (menu klik kanan)", () => {
   m.moveItem(a, "bottom"); // sudah paling bawah → tidak berubah
   assert.deepEqual(m.snapshot().scenes[0].items.map((i) => i.id), [a, b, c]);
 });
+
+test("putar & cermin: kelipatan 90 saja, tersimpan dan diteruskan ke mesin", () => {
+  const { m, engine, writes } = manager();
+  m.apply();
+  const { itemId } = m.addSource("text_gdiplus", "A", {});
+  m.setItem(itemId, { rotation: 45 });
+  assert.equal(m.snapshot().scenes[0].items[0].rotation ?? 0, 0);
+  m.setItem(itemId, { rotation: 270, flipV: true });
+  const item = m.snapshot().scenes[0].items[0];
+  assert.deepEqual([item.rotation, item.flipV, item.flipH ?? false], [270, true, false]);
+  const last = engine.calls.filter((c) => c[0] === "setItem").at(-1)[3];
+  assert.deepEqual([last.rotation, last.flipV], [270, true]);
+  assert.match(writes.at(-1), /"rotation": 270/);
+});
+
+test("koleksi lama tanpa putar/cermin dimuat dengan nilai bawaan", () => {
+  const saved = JSON.stringify({ version: 1, orientation: "landscape", activeSceneId: "a", scenes: [{ id: "a", name: "", items: [{ id: "i1", sourceId: "t", x: 1, y: 2, scaleX: 1, scaleY: 1, visible: true, locked: false }] }], sources: [{ id: "t", kind: "text_gdiplus", name: "T", settings: {} }] });
+  const { m } = manager(saved);
+  m.apply();
+  const item = m.snapshot().scenes[0].items[0];
+  assert.deepEqual([item.rotation, item.flipH, item.flipV, item.x, item.y], [0, false, false, 1, 2]);
+});
+
+test("validasi sumber: Tautan hanya https, Video wajib berkas", async () => {
+  const { validateSourceSettings } = await import("../src/main/scene-manager.mjs");
+  assert.deepEqual(validateSourceSettings("browser_source", { url: "http://a.b" }), { ok: false, code: "url_https_only" });
+  assert.deepEqual(validateSourceSettings("browser_source", { url: "javascript:alert(1)" }), { ok: false, code: "url_https_only" });
+  assert.deepEqual(validateSourceSettings("browser_source", { url: "https://sini.live" }), { ok: true });
+  assert.deepEqual(validateSourceSettings("ffmpeg_source", { local_file: "" }), { ok: false, code: "file_missing" });
+  assert.deepEqual(validateSourceSettings("ffmpeg_source", { local_file: "C:/v/a.mp4" }), { ok: true });
+  assert.deepEqual(validateSourceSettings("text_gdiplus", {}), { ok: true });
+});
+
+test("putar ulang transform: hanya item berputar/bercermin", () => {
+  const { m, engine } = manager();
+  m.apply();
+  const a = m.addSource("text_gdiplus", "A", {}).itemId;
+  m.addSource("text_gdiplus", "B", {});
+  m.setItem(a, { flipH: true });
+  engine.calls.length = 0;
+  m.reapplyOriented();
+  const calls = engine.calls.filter((c) => c[0] === "setItem");
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0][2], a);
+});

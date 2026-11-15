@@ -4,6 +4,8 @@
   kirim: `parse` dan `serialize` membuang setiap kunci bernama service/server/key/stream* dan setiap
   nilai yang tampak seperti URL rtmp(s), di kedalaman mana pun.
 */
+import { normRotation } from "./item-transform.mjs";
+
 export const MAX_ITEMS_PER_SCENE = 20;
 const FORBIDDEN_KEY = /^(service|server|key|stream.*)$/i;
 const RTMP = /rtmps?:\/\//i;
@@ -42,7 +44,10 @@ export function parse(json) {
     .map((s) => ({
       id: s.id,
       name: typeof s.name === "string" ? s.name.slice(0, 80) : "",
-      items: (Array.isArray(s.items) ? s.items : []).filter((i) => i && str(i.id) && str(i.sourceId)).slice(0, MAX_ITEMS_PER_SCENE),
+      items: (Array.isArray(s.items) ? s.items : [])
+        .filter((i) => i && str(i.id) && str(i.sourceId))
+        .slice(0, MAX_ITEMS_PER_SCENE)
+        .map((i) => ({ ...i, rotation: normRotation(i.rotation), flipH: i.flipH === true, flipV: i.flipV === true })),
     }));
   if (scenes.length === 0) return emptyCollection();
   const sources = (raw.sources ?? [])
