@@ -47,7 +47,7 @@ function QuickAudio({ kind, collection, scene, levels }: { kind: "wasapi_output_
   const mic = kind === "wasapi_input_capture";
   if (!src) {
     return (
-      <Button size="sm" variant="ghost" icon={mic ? <Mic aria-hidden /> : <Volume2 aria-hidden />} onClick={() => void window.studio.invoke("source.add", kind, t(`studio.app.kind.${kind}`), SOURCE_DEFAULTS[kind] ?? {})}>
+      <Button size="sm" variant="ghost" icon={mic ? <Mic aria-hidden /> : <Volume2 aria-hidden />} onClick={() => void window.studio.invoke("source.add", kind, t(mic ? "studio.app.ui.mic" : "studio.app.ui.desktopAudio"), SOURCE_DEFAULTS[kind] ?? {})}>
         {mic ? t("studio.app.addMic") : t("studio.app.addDesktopAudio")}
       </Button>
     );
