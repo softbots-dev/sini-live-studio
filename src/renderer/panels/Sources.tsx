@@ -4,7 +4,8 @@ import type { Collection, Scene, Source } from "../screens/Studio";
 import { useT } from "../i18n";
 import { sourceDialogStore, useSourceDialog, type Result } from "../store";
 import { openItemMenu } from "../item-menu";
-import { iconForKind, type UiKind } from "../kinds";
+import { iconForSource, WIDGET_KIND, type UiKind } from "../kinds";
+import { WidgetFields } from "./WidgetFields";
 import { AddSourceDialog } from "./AddSourceDialog";
 import { Button, Dialog, Field, IconButton } from "../ui";
 
@@ -63,7 +64,7 @@ export function SourcesPanel({ collection, scene, selected, onSelect }: { collec
           {items.map((item) => {
             const src = source(item.sourceId);
             if (!src) return null;
-            const Icon = iconForKind(src.kind);
+            const Icon = iconForSource(src);
             return (
               <li key={item.id} className={`list-row source-row ${selected === item.id ? "is-active" : ""} ${item.visible ? "" : "is-muted"}`} onContextMenu={(e) => void showMenu(e, item)}>
                 <button
@@ -129,7 +130,7 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
   const set = (patch: Record<string, unknown>) => {
     const next = { ...settings, ...patch };
     setSettings(next);
-    void window.studio.invoke<Result>("source.update", source.id, next).then((r) => setUpdateError(r && !r.ok && ["url_https_only", "file_missing"].includes(r.code) ? t(`studio.app.err.${r.code}`) : null));
+    void window.studio.invoke<Result>("source.update", source.id, source.kind === WIDGET_KIND ? patch : next).then((r) => setUpdateError(r && !r.ok && ["url_https_only", "file_missing"].includes(r.code) ? t(`studio.app.err.${r.code}`) : null));
   };
 
   const save = () => {
@@ -225,6 +226,8 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
 
       {source.kind === "browser_source" && <LinkFields settings={settings} onCommit={(patch) => set(patch)} />}
 
+      {source.kind === WIDGET_KIND && <WidgetFields source={source} settings={settings} onCommit={(patch) => set(patch)} />}
+
       {source.kind === "image_source" && (
         <div className="field">
           <span className="field-label">{t("studio.app.prop.file")}</span>
@@ -240,7 +243,7 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
         </div>
       )}
 
-      {item && !AUDIO_ONLY.has(source.kind) && (
+      {item && !AUDIO_ONLY.has(source.kind) && source.kind !== WIDGET_KIND && (
         <fieldset className="crop">
           <legend>{t("studio.app.prop.crop")}</legend>
           {(["left", "right", "top", "bottom"] as const).map((side) => (

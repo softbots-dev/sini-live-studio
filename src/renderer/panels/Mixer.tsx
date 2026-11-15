@@ -14,7 +14,8 @@ export function MixerPanel({ collection, scene, embedded = false }: { collection
   const levels = useMainState<Record<string, number[]>>("volmeter", null, {});
   if (!collection || !scene) return null;
   const used = new Set(scene.items.map((i) => i.sourceId));
-  const sources = collection.sources.filter((s) => AUDIO.has(s.kind) && used.has(s.id));
+  // Widget: hanya Alert gift yang bersuara.
+  const sources = collection.sources.filter((s) => (AUDIO.has(s.kind) || (s.kind === "sini_widget" && s.settings.widget === "alert")) && used.has(s.id));
 
   return (
     <section className={embedded ? "mixer-embedded" : "panel mixer"} aria-label={t("studio.app.mixer")}>

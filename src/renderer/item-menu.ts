@@ -1,7 +1,7 @@
 import type { Item, Scene, Source } from "./screens/Studio";
 import { flipItem, presetTransform, rotateItem, type Preset, type Size } from "./lib/transform.mjs";
 import { sourceDialogStore } from "./store";
-import { AUDIO_KINDS } from "./kinds";
+import { AUDIO_KINDS, WIDGET_KIND } from "./kinds";
 
 type T = (key: string, vars?: Record<string, string | number>) => string;
 export type ItemContext = { item: Item; scene: Scene; source: Source; size: Size | null; canvas: Size };
@@ -31,6 +31,9 @@ export async function runItemAction(id: string, ctx: ItemContext): Promise<boole
   else if (id === "lock") await window.studio.invoke("item.set", item.id, { locked: !item.locked });
   else if (id === "edit") sourceDialogStore.open({ type: "edit", sourceId: source.id });
   else if (id === "filters") sourceDialogStore.open({ type: "filters", sourceId: source.id });
+  else if (id === "w:inc" || id === "w:dec" || id === "w:reset") await window.studio.invoke("widget.counter", source.id, id.slice(2));
+  else if (id === "w:toggle") await window.studio.invoke("widget.countdown", source.id, "toggle");
+  else if (id === "w:creset") await window.studio.invoke("widget.countdown", source.id, "reset");
   else if (id === "delete") {
     await window.studio.invoke("item.remove", item.id);
     return true;
@@ -60,7 +63,16 @@ export async function openItemMenu({ t, ...ctx }: { t: T } & ItemContext): Promi
   const atTop = index === scene.items.length - 1;
   const atBottom = index === 0;
   const movable = isVisual(ctx) && !item.locked;
+  const widget = ctx.source.kind === WIDGET_KIND ? String(ctx.source.settings.widget ?? "") : "";
+  const countdown = widget === "countdown" ? await window.studio.invoke<{ running: boolean } | null>("widget.countdownState", ctx.source.id) : null;
+  const widgetEntries =
+    widget === "counter"
+      ? [{ id: "w:inc", label: t("studio.app.widget.inc") }, { id: "w:dec", label: t("studio.app.widget.dec") }, { id: "w:reset", label: t("studio.app.widget.reset") }, { type: "separator" }]
+      : widget === "countdown"
+        ? [{ id: "w:toggle", label: t(countdown?.running ? "studio.app.widget.pause" : "studio.app.widget.start") }, { id: "w:creset", label: t("studio.app.widget.reset") }, { type: "separator" }]
+        : [];
   const entries = [
+    ...widgetEntries,
     {
       label: t("studio.app.menu.order"),
       submenu: [

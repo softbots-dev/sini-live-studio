@@ -28,6 +28,7 @@ export function AddSourceDialog({ onClose, onAdded }: { onClose: () => void; onA
       if (!file) return;
       settings = { ...settings, local_file: file, is_local_file: true, looping: true, restart_on_activate: true };
     }
+    if (meta.widget) settings = { widget: meta.widget };
     if (pick === "link") {
       const canvas = await window.studio.invoke<{ width: number; height: number }>("canvas.get");
       settings = { ...settings, url: url.trim(), width: canvas.width, height: canvas.height, reroute_audio: true };
@@ -39,7 +40,7 @@ export function AddSourceDialog({ onClose, onAdded }: { onClose: () => void; onA
     else setError(r.code === "scene_full" ? t("studio.app.sceneFull") : ERRORS.has(r.code) ? t(`studio.app.err.${r.code}`) : t("studio.app.chat.actionFailed"));
   };
 
-  const group = (g: "video" | "audio") => (
+  const group = (g: "video" | "audio" | "widget") => (
     <div className="addsrc-group">
       <h3 className="addsrc-group-title">{t(`studio.app.group.${g}`)}</h3>
       <div className="addsrc-grid" role="radiogroup" aria-label={t(`studio.app.group.${g}`)}>
@@ -76,6 +77,7 @@ export function AddSourceDialog({ onClose, onAdded }: { onClose: () => void; onA
         <div className="addsrc-list">
           {group("video")}
           {group("audio")}
+          {group("widget")}
         </div>
         <div className="addsrc-info" aria-live="polite">
           <div className={`kind-art kind-art-${meta.group}`} aria-hidden>
