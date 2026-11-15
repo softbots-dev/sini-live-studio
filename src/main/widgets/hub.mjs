@@ -232,6 +232,11 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
       };
     },
 
+    /** Jumlah baris tiap widget ranking (poller mengambil sebanyak yang terbesar). */
+    rankingSizes() {
+      return ofType("ranking").map(([, w]) => w.settings.rows);
+    },
+
     /** Ganti akun / keluar: tidak ada sisa akun lama. */
     reset() {
       for (const w of widgets.values()) {

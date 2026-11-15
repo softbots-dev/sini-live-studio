@@ -1,6 +1,7 @@
 import { app, dialog, ipcMain, Menu, shell, type BrowserWindow } from "electron";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import WebSocket from "ws";
 import { createChatModel } from "./chat-model.mjs";
@@ -16,6 +17,11 @@ import { createSelectionOverlay, type Frame } from "./overlay.js";
 import { CANVAS, createSceneManager, validateSourceSettings } from "./scene-manager.mjs";
 import { sessionStore } from "./session-store.js";
 import { ObsEngine, SOURCE_KINDS, type FilterKind, type Profile, type SourceKind } from "./engine/obs.js";
+import { WIDGET_KIND, WIDGET_SIZES } from "./widgets/config.mjs";
+import { createWidgetHub } from "./widgets/hub.mjs";
+import { createWidgetServer } from "./widgets/server.mjs";
+import { createRankingPoller } from "./widgets/ranking-poller.mjs";
+import { createCatalogSounds } from "./widgets/catalog-sounds.mjs";
 
 /*
   Pengendali proses utama: sesi Sini, sambungan lewat browser, mesin OBS, scene, dan mesin status siaran.
@@ -89,6 +95,26 @@ export function startController(win: BrowserWindow) {
     },
   };
 
+  // ── Widget di layar siaran (docs/live-studio.md § Widget) ────────────────────
+  const absUrl = (u: string) => (typeof u === "string" && u.startsWith("/") ? `${origin.replace(/\/+$/, "")}${u}` : u);
+  const catalogSounds = createCatalogSounds({ fetch: async () => (await rawHttp.get("/catalog")).data, origin, now: Date.now });
+  const widgetHub = createWidgetHub({ now: Date.now, setTimer: (fn: () => void, ms: number) => setTimeout(fn, ms), clearTimer: (id: NodeJS.Timeout) => clearTimeout(id), absUrl, soundFor: (id: string) => catalogSounds.soundFor(id) });
+  const widgetServer = createWidgetServer({ hub: widgetHub, staticDir: join(dirname(fileURLToPath(import.meta.url)), "../renderer"), origin });
+  /** Sumber `sini_widget` → sumber browser ber-URL lokal (dibuat saat jalan, tidak pernah disimpan). */
+  const widgetSource = (id: string, settings: { widget: keyof typeof WIDGET_SIZES }) => {
+    const size = WIDGET_SIZES[settings.widget] ?? WIDGET_SIZES.counter;
+    return { kind: "browser_source", settings: { url: widgetServer.urlFor(id, settings.widget), width: size.width, height: size.height, reroute_audio: true, shutdown: false, restart_when_active: false, css: "" } };
+  };
+  let rankingSlug: string | null = null;
+  const rankingRows = () => Math.max(5, ...widgetHub.rankingSizes());
+  const ranking = createRankingPoller({
+    fetch: async () => (rankingSlug ? (await rawHttp.get(`/channels/${encodeURIComponent(rankingSlug)}/supporters?scope=live&limit=${rankingRows()}`)).data : []),
+    now: Date.now,
+    setTimer: (fn: () => void, ms: number) => setTimeout(fn, ms),
+    clearTimer: (id: NodeJS.Timeout) => clearTimeout(id),
+    onChange: (rows: unknown[]) => widgetHub.setRanking(rows),
+  });
+
   // ── Chat (gateway) ────────────────────────────────────────────────────────
   const chat = createChatModel();
   let chatTimer: NodeJS.Timeout | null = null;
@@ -121,6 +147,9 @@ export function startController(win: BrowserWindow) {
       if (msg.type === "socket.closed") chatStatus = "connecting";
       if (msg.type === "chat.rejected") send("chat.rejected", { code: msg.data?.code ?? null });
       if (msg.type === "stats.changed") perf.refresh();
+      if (msg.type === "chat.message" && msg.data?.type === "gift") ranking.nudge();
+      if (msg.type === "chat.message" && (msg.data?.type === "follow" || msg.data?.type === "subscription")) perf.refresh();
+      widgetHub.onRealtime(msg);
       chat.apply(msg);
       pushChat();
     },
@@ -142,12 +171,15 @@ export function startController(win: BrowserWindow) {
     }
     scenes = null;
     send("scenes", null);
+    widgetHub.setWidgets([]);
+    widgetHub.reset();
   }
   function leaveRoom() {
     roomSlug = null;
     chatStatus = "idle";
     realtime.disconnect();
     chat.reset();
+    widgetHub.reset();
     pushChat();
   }
 
@@ -248,12 +280,17 @@ export function startController(win: BrowserWindow) {
       load: () => (existsSync(file) ? readFileSync(file, "utf8") : null),
       save: (json: string) => writeFileSync(file, json),
       newId: (prefix: string) => `${prefix}-${randomUUID().slice(0, 8)}`,
+      widgetSource,
     });
     scenes.apply();
     pushScenes();
   }
 
-  const pushScenes = () => scenes && send("scenes", scenes.snapshot());
+  const pushScenes = () => {
+    if (!scenes) return;
+    send("scenes", scenes.snapshot());
+    widgetHub.setWidgets(scenes.widgets());
+  };
 
   // ── Mesin status siaran ───────────────────────────────────────────────────
   let perfValue: unknown = { session: null };
@@ -265,6 +302,7 @@ export function startController(win: BrowserWindow) {
     onChange: (value: unknown) => {
       perfValue = value;
       send("perf", value);
+      widgetHub.setPerf(value);
     },
   });
   const machine = createBroadcastMachine({
@@ -279,8 +317,14 @@ export function startController(win: BrowserWindow) {
     clearTimer: (id: NodeJS.Timeout) => clearTimeout(id),
     onChange: (state: { phase: string; channel?: { slug: string | null } | null }) => {
       send("broadcast", state);
-      if (state.phase === "live") perf.start();
-      else if (!["connecting", "reconnecting"].includes(state.phase)) perf.stop();
+      if (state.channel?.slug) rankingSlug = state.channel.slug;
+      if (state.phase === "live") {
+        perf.start();
+        ranking.start();
+      } else if (!["connecting", "reconnecting"].includes(state.phase)) {
+        perf.stop();
+        ranking.stop();
+      }
       if (state.channel?.slug && account.status === "signedIn") joinRoom(state.channel.slug);
       const active = ["starting", "connecting", "live", "reconnecting"].includes(state.phase);
       if (active && !statsTimer) statsTimer = setInterval(() => send("stats", engine.stats()), 1000);
@@ -332,6 +376,7 @@ export function startController(win: BrowserWindow) {
     const next = { ...readSettings(), locale: code ?? undefined };
     writeFileSync(settingsFile(), JSON.stringify(next));
     send("locale", rawLocale());
+    widgetHub.setLocale(rawLocale());
   });
   handle("account.get", () => account);
   handle("engine.get", () => ({ ready: engineReady, error: engineError }));
@@ -427,7 +472,7 @@ export function startController(win: BrowserWindow) {
   });
 
   handle("source.add", async (kind: SourceKind, name: string, settings: Record<string, unknown>) => {
-    if (!SOURCE_KINDS.includes(kind)) return { ok: false, code: "source_kind" };
+    if (!SOURCE_KINDS.includes(kind) && (kind as string) !== WIDGET_KIND) return { ok: false, code: "source_kind" };
     const valid = validateSourceSettings(kind, settings ?? {});
     if (!valid.ok) return valid;
     const res = guard(() => needScenes().addSource(kind, name, settings ?? {}));
@@ -441,6 +486,14 @@ export function startController(win: BrowserWindow) {
     return guard(() => needScenes().updateSource(id, settings));
   });
   handle("source.rename", (id: string, name: string) => guard(() => needScenes().renameSource(id, name)));
+  handle("widget.test", (id: string) => widgetHub.test(id));
+  handle("widget.counter", (id: string, op: "inc" | "dec" | "reset") => {
+    const res = guard(() => needScenes().counter(id, op));
+    if (res.ok) widgetHub.counterChanged(id, res.value);
+    return res;
+  });
+  handle("widget.countdown", (id: string, op: "toggle" | "reset") => widgetHub.countdown(id, op));
+  handle("widget.countdownState", (id: string) => widgetHub.countdownState(id));
   handle("source.options", (id: string, property: string) => {
     try {
       return engine.sourceOptions(id, property);
@@ -548,8 +601,16 @@ export function startController(win: BrowserWindow) {
 
   return {
     start() {
-      setImmediate(initEngine);
-      void refreshAccount();
+      widgetHub.setLocale(rawLocale());
+      void catalogSounds.load();
+      // Server widget dulu: koleksi yang dimuat memakai URL-nya (port) untuk sumber widget.
+      void widgetServer
+        .start()
+        .catch(() => 0)
+        .then(() => {
+          setImmediate(initEngine);
+          void refreshAccount();
+        });
     },
     isLive: () => machine.isActive(),
     phase: () => (machine.snapshot() as { phase: string }).phase,
@@ -557,6 +618,8 @@ export function startController(win: BrowserWindow) {
     shutdown() {
       clearInterval(orientTimer);
       if (statsTimer) clearInterval(statsTimer);
+      ranking.stop();
+      void widgetServer.stop();
       realtime.disconnect();
       try {
         engine.shutdown();

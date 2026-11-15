@@ -33,6 +33,7 @@ export function validateSourceSettings(kind, settings = {}) {
 /**
  * `widgetSource(sourceId, settings)` → { kind: "browser_source", settings } — sumber `sini_widget` disimpan
  * apa adanya di koleksi, tapi mesin menerima sumber browser ber-URL lokal yang dibuat saat jalan.
+ * @param {{ engine: any, load: () => string | null, save: (json: string) => void, newId: (prefix: string) => string, widgetSource?: ((id: string, settings: any) => { kind: string, settings: Record<string, unknown> }) | null }} deps
  */
 export function createSceneManager({ engine, load, save, newId, widgetSource = null }) {
   let state = parse(load() ?? "");
