@@ -27,3 +27,7 @@ export function obsTransform(item, size) {
     crop,
   };
 }
+
+/** Jenis sumber yang punya audio → mesin memasang fader (volume) & volmeter (meter level). */
+const AUDIO_KINDS = new Set(["wasapi_input_capture", "wasapi_output_capture", "dshow_input", "ffmpeg_source", "browser_source"]);
+export const hasAudio = (kind) => AUDIO_KINDS.has(kind);

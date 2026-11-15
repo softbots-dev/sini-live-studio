@@ -33,3 +33,9 @@ test("potongan mengecilkan kotak sebelum pusat dihitung", () => {
   assert.deepEqual(t.position, { x: 100 + 200, y: 50 + 100 });
   assert.deepEqual(t.crop, { left: 200, right: 0, top: 0, bottom: 100 });
 });
+
+test("sumber ber-audio (punya fader & meter): mikrofon, audio komputer, kamera, Video, Tautan", async () => {
+  const { hasAudio } = await import("../src/main/engine/item-transform.mjs");
+  for (const k of ["wasapi_input_capture", "wasapi_output_capture", "dshow_input", "ffmpeg_source", "browser_source"]) assert.equal(hasAudio(k), true, k);
+  for (const k of ["monitor_capture", "window_capture", "image_source", "text_gdiplus"]) assert.equal(hasAudio(k), false, k);
+});

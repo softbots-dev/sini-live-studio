@@ -4,7 +4,7 @@ import * as osn from "obs-studio-node";
 import { encoderSettings, fitProfile, pickEncoder } from "./encoder.mjs";
 import { MAX_ITEMS_PER_SCENE } from "./collection.mjs";
 import { scrubLogDir } from "./log-scrub.mjs";
-import { obsTransform } from "./item-transform.mjs";
+import { hasAudio, obsTransform } from "./item-transform.mjs";
 
 /*
   Pembungkus obs-studio-node (libobs) untuk Sini Live Studio. Berjalan di proses utama; pekerjaan berat
@@ -190,7 +190,7 @@ export class ObsEngine {
     if (this.sources.has(id)) return;
     const input = osn.InputFactory.create(kind, id, settings);
     this.sources.set(id, input);
-    if (kind === "wasapi_input_capture" || kind === "wasapi_output_capture" || kind === "dshow_input") {
+    if (hasAudio(kind)) {
       const fader = osn.FaderFactory.create(osn.EFaderType.IEC);
       fader.attach(input);
       this.faders.set(id, fader);
