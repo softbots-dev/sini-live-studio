@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { pickLocale, translator } from "../i18n";
-import type { Settings, WidgetProps } from "./types";
+import { setNumberLocale, type Settings, type WidgetProps } from "./types";
 import { AlertWidget } from "./Alert";
 import { GoalWidget } from "./Goal";
 import { CounterWidget } from "./Counter";
@@ -56,7 +56,11 @@ function Widget() {
     };
   }, []);
 
-  const t = useMemo(() => translator(pickLocale(config?.locale ?? navigator.language)), [config?.locale]);
+  const t = useMemo(() => {
+    const locale = pickLocale(config?.locale ?? navigator.language);
+    setNumberLocale(locale);
+    return translator(locale);
+  }, [config?.locale]);
   useEffect(() => {
     if (config) document.documentElement.lang = pickLocale(config.locale);
   }, [config?.locale]);

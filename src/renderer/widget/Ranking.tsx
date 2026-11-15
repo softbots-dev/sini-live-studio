@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Coins } from "lucide-react";
+import { SafeImg } from "./SafeImg";
 import { fmt, titleOf, type RankRow, type WidgetProps } from "./types";
 
 /* Ranking: penyawer teratas siaran ini (nilai koin gift, bukan diamond). */
@@ -16,7 +17,7 @@ export function RankingWidget({ t, settings, on }: WidgetProps) {
           {rows.map((r, i) => (
             <li key={`${i}-${r.name}`} className={`w-rank-row rank-${i + 1}`}>
               <span className="w-rank-pos">{i + 1}</span>
-              {r.avatarUrl ? <img className="w-avatar" src={r.avatarUrl} alt="" /> : <span className="w-avatar w-avatar-empty" />}
+              {r.avatarUrl ? <SafeImg className="w-avatar" src={r.avatarUrl} fallback={<span className="w-avatar w-avatar-empty" />} /> : <span className="w-avatar w-avatar-empty" />}
               <span className="w-rank-name">{r.name}</span>
               <span className="w-rank-coins">
                 <Coins aria-hidden />

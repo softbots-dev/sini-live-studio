@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Gift } from "lucide-react";
 import { chime } from "./chime";
+import { SafeImg } from "./SafeImg";
 import { isUrl, type AlertData, type WidgetProps } from "./types";
 
 /* Alert gift: kartu masuk dari bawah, ikon berdenyut, keluar memudar. Antrean & kombo diatur proses utama. */
@@ -37,10 +38,10 @@ export function AlertWidget({ t, settings, on }: WidgetProps) {
   return (
     <div className="w-alert-stage">
       <div key={alert.id} className={`w-alert ${leaving ? "is-leaving" : ""}`}>
-        <div className="w-alert-icon">{isUrl(alert.icon) ? <img src={alert.icon} alt="" /> : alert.icon ? <span className="w-alert-glyph">{alert.icon}</span> : <Gift aria-hidden />}</div>
+        <div className="w-alert-icon">{isUrl(alert.icon) ? <SafeImg src={alert.icon} fallback={<Gift aria-hidden />} /> : alert.icon ? <span className="w-alert-glyph">{alert.icon}</span> : <Gift aria-hidden />}</div>
         <div className="w-alert-text">
           <div className="w-alert-sender">
-            {alert.sender.avatarUrl && <img className="w-avatar" src={alert.sender.avatarUrl} alt="" />}
+            {alert.sender.avatarUrl && <SafeImg className="w-avatar" src={alert.sender.avatarUrl} />}
             <span>{name}</span>
           </div>
           <div className="w-alert-gift">{t("studio.app.wp.sent", { gift: giftName })}</div>

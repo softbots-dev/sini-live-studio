@@ -12,4 +12,13 @@ export type WidgetProps = { t: Translate; settings: Settings; on: <T>(event: str
 
 export const isUrl = (s: string | null | undefined): s is string => typeof s === "string" && /^(https?:)?\/\//i.test(s);
 export const titleOf = (settings: Settings, t: Translate, fallbackKey: string) => (typeof settings.title === "string" && settings.title.trim() ? settings.title : t(fallbackKey));
-export const fmt = (n: number) => new Intl.NumberFormat().format(n);
+// Format angka mengikuti bahasa studio (bukan bahasa browser OBS) — diatur halaman saat `config` datang.
+let numberFormat = new Intl.NumberFormat("en");
+export function setNumberLocale(locale: string) {
+  try {
+    numberFormat = new Intl.NumberFormat(locale);
+  } catch {
+    numberFormat = new Intl.NumberFormat("en");
+  }
+}
+export const fmt = (n: number) => numberFormat.format(n);
