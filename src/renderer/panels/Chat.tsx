@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Ban, Clock, Gem, Send, Trash2, Users } from "lucide-react";
+import { Ban, Clock, Gem, Send, Trash2 } from "lucide-react";
 import type { BroadcastState } from "./ControlBar";
 import { useT } from "../i18n";
 import { useMainState } from "../store";
@@ -80,10 +80,6 @@ export function ChatPanel({ broadcast }: { broadcast: BroadcastState }) {
             {t("studio.app.chat.giftsTab")}
           </button>
         </div>
-        <span className="chat-viewers" title={t("studio.app.peakViewers", { count: nf.format(chat.peakViewers) })}>
-          <Users aria-hidden />
-          {t("studio.app.viewers", { count: nf.format(chat.viewers) })}
-        </span>
       </header>
 
       {tab === "chat" ? (

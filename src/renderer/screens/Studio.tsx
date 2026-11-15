@@ -12,6 +12,7 @@ import { PreviewToolbar } from "../panels/PreviewToolbar";
 import { ControlBar, type BroadcastState } from "../panels/ControlBar";
 import { SettingsDialog } from "../panels/Settings";
 import { ChatPanel } from "../panels/Chat";
+import { PerformancePanel } from "../panels/Performance";
 import { TitleDialog } from "../panels/TitleDialog";
 
 export type Item = {
@@ -138,6 +139,7 @@ export function StudioScreen({ user }: { user: User }) {
       </section>
 
       <aside className="right">
+        <PerformancePanel broadcast={broadcast} />
         <ChatPanel broadcast={broadcast} />
       </aside>
 

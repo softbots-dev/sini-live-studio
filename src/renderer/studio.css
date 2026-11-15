@@ -242,3 +242,14 @@ input[type="range"] { accent-color: var(--brand); }
 .ctrl-msg-info { color: var(--fg-muted); }
 .stats-row { min-height: 1.25rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 0.25rem 1.375rem; color: var(--fg-muted); font-size: var(--text-2xs); }
 .mixer-embedded .mixer-list { padding: 0; }
+
+/* ── Kolom kanan: Performa LIVE & chat ────────────────────────────────── */
+.perf { flex-shrink: 0; }
+.perf-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.perf-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+.metric { display: flex; flex-direction: column; gap: 0.0625rem; padding: 0.5rem 0.625rem; border-radius: 0.5625rem; background: var(--surface-2); min-width: 0; }
+.metric-icon svg { width: 0.875rem; height: 0.875rem; color: var(--fg-muted); }
+.metric-value { font-size: var(--text-lg); font-weight: 700; line-height: 1.2; }
+.metric-label { font-size: var(--text-2xs); color: var(--fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.perf-empty { margin: 0; color: var(--fg-muted); font-size: var(--text-xs); }
+.right .chat { border-radius: 0.75rem; }

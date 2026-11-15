@@ -23,7 +23,7 @@ type Stats = { kbps: number; droppedFrames: number; totalFrames: number; cpu: nu
 const ACTIVE = new Set(["starting", "connecting", "live", "reconnecting"]);
 const FAILED = new Set(["rate_limited", "reconnect_exhausted", "output_failed", "network"]);
 
-function useDuration(since: string | null | undefined) {
+export function useDuration(since: string | null | undefined) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     if (!since) return;
