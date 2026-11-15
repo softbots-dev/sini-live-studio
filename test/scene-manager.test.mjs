@@ -177,3 +177,54 @@ test("putar ulang transform: hanya item berputar/bercermin", () => {
   assert.equal(calls.length, 1);
   assert.equal(calls[0][2], a);
 });
+
+function widgetManager(saved = null) {
+  const engine = fakeEngine();
+  const writes = [];
+  let n = 0;
+  const widgetSource = (id, settings) => ({ kind: "browser_source", settings: { url: `http://127.0.0.1:9/w/t/widget.html?id=${id}&type=${settings.widget}`, width: 1, height: 1 } });
+  const m = createSceneManager({ engine, load: () => saved, save: (json) => writes.push(json), newId: (p) => `${p}-${++n}`, widgetSource });
+  return { m, engine, writes };
+}
+
+test("widget: disimpan sebagai sini_widget tanpa URL, mesin menerima browser_source", () => {
+  const { m, engine, writes } = widgetManager();
+  m.apply();
+  const { sourceId } = m.addSource("sini_widget", "Alert", { widget: "alert", durationSec: 40 });
+  const create = engine.calls.find((c) => c[0] === "createSource" && c[1] === sourceId);
+  assert.equal(create[2], "browser_source");
+  assert.match(create[3].url, /type=alert/);
+  const src = m.snapshot().sources.find((s) => s.id === sourceId);
+  assert.equal(src.kind, "sini_widget");
+  assert.deepEqual(src.settings, { widget: "alert", durationSec: 15, minCoins: 1, sound: true });
+  assert.ok(!writes.at(-1).includes("127.0.0.1"));
+  m.updateSource(sourceId, { sound: false });
+  const update = engine.calls.filter((c) => c[0] === "updateSource" && c[1] === sourceId).at(-1);
+  assert.match(update[2].url, /type=alert/);
+  assert.equal(m.snapshot().sources.find((s) => s.id === sourceId).settings.sound, false);
+});
+
+test("widget: apply koleksi tersimpan lewat widgetSource, pengaturan rusak dijepit", () => {
+  const saved = JSON.stringify({
+    version: 1,
+    activeSceneId: "a",
+    scenes: [{ id: "a", name: "", items: [{ id: "i1", sourceId: "w1" }] }],
+    sources: [{ id: "w1", kind: "sini_widget", name: "Rank", settings: { widget: "ranking", rows: 99 } }],
+  });
+  const { m, engine } = widgetManager(saved);
+  m.apply();
+  assert.equal(engine.calls.find((c) => c[0] === "createSource")[2], "browser_source");
+  assert.deepEqual(m.widgets(), [{ id: "w1", type: "ranking", settings: { widget: "ranking", title: "", rows: 10 } }]);
+});
+
+test("widget penghitung: +1, −1, atur ulang — tersimpan", () => {
+  const { m, writes } = widgetManager();
+  m.apply();
+  const { sourceId } = m.addSource("sini_widget", "Hitung", { widget: "counter" });
+  assert.equal(m.counter(sourceId, "inc"), 1);
+  assert.equal(m.counter(sourceId, "inc"), 2);
+  assert.equal(m.counter(sourceId, "dec"), 1);
+  assert.equal(JSON.parse(writes.at(-1)).sources.find((s) => s.id === sourceId).settings.value, 1);
+  assert.equal(m.counter(sourceId, "reset"), 0);
+  assert.throws(() => m.counter("tidak-ada", "inc"), /source_missing/);
+});

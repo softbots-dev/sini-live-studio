@@ -5,6 +5,7 @@
 */
 import { MAX_ITEMS_PER_SCENE, parse, serialize } from "./engine/collection.mjs";
 import { isOriented } from "./engine/item-transform.mjs";
+import { normalizeWidget, WIDGET_KIND } from "./widgets/config.mjs";
 
 export const CANVAS = { landscape: { width: 1920, height: 1080 }, portrait: { width: 1080, height: 1920 } };
 
@@ -29,7 +30,11 @@ export function validateSourceSettings(kind, settings = {}) {
   return { ok: true };
 }
 
-export function createSceneManager({ engine, load, save, newId }) {
+/**
+ * `widgetSource(sourceId, settings)` → { kind: "browser_source", settings } — sumber `sini_widget` disimpan
+ * apa adanya di koleksi, tapi mesin menerima sumber browser ber-URL lokal yang dibuat saat jalan.
+ */
+export function createSceneManager({ engine, load, save, newId, widgetSource = null }) {
   let state = parse(load() ?? "");
 
   const persist = () => save(serialize(state));
@@ -45,6 +50,16 @@ export function createSceneManager({ engine, load, save, newId }) {
   };
   const transform = (i) => ({ x: i.x ?? 0, y: i.y ?? 0, scaleX: i.scaleX ?? 1, scaleY: i.scaleY ?? 1, crop: i.crop, visible: i.visible !== false, rotation: i.rotation ?? 0, flipH: i.flipH === true, flipV: i.flipV === true });
 
+  const engineSource = (id, kind, settings) => {
+    if (kind !== WIDGET_KIND) return { kind, settings };
+    if (!widgetSource) throw fail("widget_unavailable");
+    return widgetSource(id, settings);
+  };
+  const createInEngine = (id, kind, settings) => {
+    const e = engineSource(id, kind, settings);
+    engine.createSource(id, e.kind, e.settings);
+  };
+
   function applySourceAudio(s) {
     if (typeof s.volume === "number") engine.setVolume(s.id, s.volume);
     if (s.muted) engine.setMuted(s.id, true);
@@ -58,7 +73,7 @@ export function createSceneManager({ engine, load, save, newId }) {
       engine.setCanvas(CANVAS[state.orientation]);
       for (const s of state.sources) {
         try {
-          engine.createSource(s.id, s.kind, s.settings ?? {});
+          createInEngine(s.id, s.kind, s.settings ?? {});
           applySourceAudio(s);
         } catch {
           // Sumber yang tidak bisa dibuat (mis. perangkat dicabut) dibiarkan di daftar; item-nya dilewati.
@@ -135,7 +150,8 @@ export function createSceneManager({ engine, load, save, newId }) {
       if (sc.items.length >= MAX_ITEMS_PER_SCENE) throw fail("scene_full");
       const sourceId = newId("source");
       const itemId = newId("item");
-      engine.createSource(sourceId, kind, settings);
+      if (kind === WIDGET_KIND) settings = normalizeWidget(settings);
+      createInEngine(sourceId, kind, settings);
       const src = { id: sourceId, kind, name: String(name ?? "").slice(0, 80), settings, volume: 1, muted: false, monitoring: "none", filters: [] };
       state.sources.push(src);
       const item = { id: itemId, sourceId, ...place, visible: true, locked: false, rotation: 0, flipH: false, flipV: false };
@@ -149,8 +165,24 @@ export function createSceneManager({ engine, load, save, newId }) {
       const s = source(id);
       if (!s) throw fail("source_missing");
       s.settings = { ...s.settings, ...settings };
-      engine.updateSource(id, s.settings);
+      if (s.kind === WIDGET_KIND) s.settings = normalizeWidget(s.settings);
+      engine.updateSource(id, engineSource(id, s.kind, s.settings).settings);
       persist();
+    },
+
+    /** Semua sumber widget koleksi (untuk hub widget). */
+    widgets() {
+      return state.sources.filter((s) => s.kind === WIDGET_KIND).map((s) => ({ id: s.id, type: s.settings.widget, settings: s.settings }));
+    },
+
+    /** Widget penghitung: "inc" / "dec" / "reset" → nilai baru (tersimpan). */
+    counter(id, op) {
+      const s = source(id);
+      if (!s || s.kind !== WIDGET_KIND || s.settings.widget !== "counter") throw fail("source_missing");
+      const value = op === "reset" ? 0 : s.settings.value + (op === "dec" ? -1 : 1);
+      s.settings = normalizeWidget({ ...s.settings, value });
+      persist();
+      return s.settings.value;
     },
 
     renameSource(id, name) {

@@ -5,6 +5,7 @@
   nilai yang tampak seperti URL rtmp(s), di kedalaman mana pun.
 */
 import { normRotation } from "./item-transform.mjs";
+import { normalizeWidget, WIDGET_KIND } from "../widgets/config.mjs";
 
 export const MAX_ITEMS_PER_SCENE = 20;
 const FORBIDDEN_KEY = /^(service|server|key|stream.*)$/i;
@@ -52,7 +53,10 @@ export function parse(json) {
   if (scenes.length === 0) return emptyCollection();
   const sources = (raw.sources ?? [])
     .filter((s) => s && str(s.id) && str(s.kind))
-    .map((s) => ({ ...s, settings: s.settings && typeof s.settings === "object" ? s.settings : {}, filters: Array.isArray(s.filters) ? s.filters : [] }));
+    .map((s) => {
+      const settings = s.settings && typeof s.settings === "object" ? s.settings : {};
+      return { ...s, settings: s.kind === WIDGET_KIND ? normalizeWidget(settings) : settings, filters: Array.isArray(s.filters) ? s.filters : [] };
+    });
   return {
     version: 1,
     orientation: raw.orientation === "portrait" ? "portrait" : "landscape",
