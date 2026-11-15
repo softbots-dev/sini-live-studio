@@ -262,5 +262,22 @@
   "studio.app.volume": "ระดับเสียง {name}",
   "studio.app.welcome.body": "ไลฟ์จากคอมพิวเตอร์ของคุณ ตรงถึงผู้ชมบน Sini",
   "studio.app.welcome.legal": "การดำเนินการต่อถือว่าคุณยอมรับ{terms}และ{privacy}ของ Sini",
-  "studio.app.welcome.title": "ยินดีต้อนรับสู่ Live Studio"
+  "studio.app.welcome.title": "ยินดีต้อนรับสู่ Live Studio",
+  "studio.app.wp.anonymous": "ไม่ระบุชื่อ",
+  "studio.app.wp.countdownTitle": "นับถอยหลัง",
+  "studio.app.wp.counterTitle": "ตัวนับ",
+  "studio.app.wp.event.follow": "เริ่มติดตาม",
+  "studio.app.wp.event.gift": "ส่ง {gift} ×{count}",
+  "studio.app.wp.event.member": "เป็นสมาชิกแล้ว",
+  "studio.app.wp.goal.coins": "เหรียญ",
+  "studio.app.wp.goal.followers": "ผู้ติดตามใหม่",
+  "studio.app.wp.goal.gifts": "ของขวัญ",
+  "studio.app.wp.goal.members": "สมาชิกใหม่",
+  "studio.app.wp.goalTitle": "เป้าหมายการไลฟ์",
+  "studio.app.wp.rankingEmpty": "ยังไม่มีของขวัญในไลฟ์นี้",
+  "studio.app.wp.rankingTitle": "ผู้สนับสนุนสูงสุด",
+  "studio.app.wp.sampleChat": "สวัสดี! นี่คือข้อความตัวอย่าง",
+  "studio.app.wp.sampleGift": "กุหลาบ",
+  "studio.app.wp.sampleName": "ผู้ชม Sini",
+  "studio.app.wp.sent": "ส่ง {gift}"
 }

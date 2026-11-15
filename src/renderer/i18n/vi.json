@@ -262,5 +262,22 @@
   "studio.app.volume": "Âm lượng {name}",
   "studio.app.welcome.body": "Phát trực tiếp từ máy tính đến thẳng người xem của bạn trên Sini.",
   "studio.app.welcome.legal": "Khi tiếp tục, bạn đồng ý với {terms} và {privacy} của Sini.",
-  "studio.app.welcome.title": "Chào mừng đến với Live Studio"
+  "studio.app.welcome.title": "Chào mừng đến với Live Studio",
+  "studio.app.wp.anonymous": "Ẩn danh",
+  "studio.app.wp.countdownTitle": "Đếm ngược",
+  "studio.app.wp.counterTitle": "Bộ đếm",
+  "studio.app.wp.event.follow": "đã theo dõi",
+  "studio.app.wp.event.gift": "đã gửi {gift} ×{count}",
+  "studio.app.wp.event.member": "đã trở thành thành viên",
+  "studio.app.wp.goal.coins": "xu",
+  "studio.app.wp.goal.followers": "người theo dõi mới",
+  "studio.app.wp.goal.gifts": "quà",
+  "studio.app.wp.goal.members": "thành viên mới",
+  "studio.app.wp.goalTitle": "Mục tiêu buổi live",
+  "studio.app.wp.rankingEmpty": "Chưa có quà trong buổi live này",
+  "studio.app.wp.rankingTitle": "Người ủng hộ hàng đầu",
+  "studio.app.wp.sampleChat": "Xin chào! Đây là tin nhắn mẫu.",
+  "studio.app.wp.sampleGift": "Hoa hồng",
+  "studio.app.wp.sampleName": "Người xem Sini",
+  "studio.app.wp.sent": "đã gửi {gift}"
 }

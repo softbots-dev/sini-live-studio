@@ -262,5 +262,22 @@
   "studio.app.volume": "{name} volume",
   "studio.app.welcome.body": "Go live from your computer, straight to your viewers on Sini.",
   "studio.app.welcome.legal": "By continuing, you agree to Sini's {terms} and {privacy}.",
-  "studio.app.welcome.title": "Welcome to Live Studio"
+  "studio.app.welcome.title": "Welcome to Live Studio",
+  "studio.app.wp.anonymous": "Anonymous",
+  "studio.app.wp.countdownTitle": "Countdown",
+  "studio.app.wp.counterTitle": "Counter",
+  "studio.app.wp.event.follow": "started following",
+  "studio.app.wp.event.gift": "sent {gift} ×{count}",
+  "studio.app.wp.event.member": "became a member",
+  "studio.app.wp.goal.coins": "coins",
+  "studio.app.wp.goal.followers": "new followers",
+  "studio.app.wp.goal.gifts": "gifts",
+  "studio.app.wp.goal.members": "new members",
+  "studio.app.wp.goalTitle": "Stream goal",
+  "studio.app.wp.rankingEmpty": "No gifts in this stream yet",
+  "studio.app.wp.rankingTitle": "Top supporters",
+  "studio.app.wp.sampleChat": "Hi! This is a sample message.",
+  "studio.app.wp.sampleGift": "Rose",
+  "studio.app.wp.sampleName": "Sini viewer",
+  "studio.app.wp.sent": "sent {gift}"
 }

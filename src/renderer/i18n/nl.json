@@ -262,5 +262,22 @@
   "studio.app.volume": "Volume van {name}",
   "studio.app.welcome.body": "Ga live vanaf je computer, rechtstreeks naar je kijkers op Sini.",
   "studio.app.welcome.legal": "Door verder te gaan, ga je akkoord met de {terms} en het {privacy} van Sini.",
-  "studio.app.welcome.title": "Welkom bij Live Studio"
+  "studio.app.welcome.title": "Welkom bij Live Studio",
+  "studio.app.wp.anonymous": "Anoniem",
+  "studio.app.wp.countdownTitle": "Aftellen",
+  "studio.app.wp.counterTitle": "Teller",
+  "studio.app.wp.event.follow": "volgt nu",
+  "studio.app.wp.event.gift": "stuurde {gift} ×{count}",
+  "studio.app.wp.event.member": "werd lid",
+  "studio.app.wp.goal.coins": "munten",
+  "studio.app.wp.goal.followers": "nieuwe volgers",
+  "studio.app.wp.goal.gifts": "cadeaus",
+  "studio.app.wp.goal.members": "nieuwe leden",
+  "studio.app.wp.goalTitle": "Streamdoel",
+  "studio.app.wp.rankingEmpty": "Nog geen cadeaus in deze stream",
+  "studio.app.wp.rankingTitle": "Topsupporters",
+  "studio.app.wp.sampleChat": "Hoi! Dit is een voorbeeldbericht.",
+  "studio.app.wp.sampleGift": "Roos",
+  "studio.app.wp.sampleName": "Sini-kijker",
+  "studio.app.wp.sent": "stuurde {gift}"
 }

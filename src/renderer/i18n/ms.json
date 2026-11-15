@@ -262,5 +262,22 @@
   "studio.app.volume": "Kelantangan {name}",
   "studio.app.welcome.body": "Bersiaran langsung dari komputer terus kepada penontonmu di Sini.",
   "studio.app.welcome.legal": "Dengan meneruskan, anda bersetuju dengan {terms} dan {privacy} Sini.",
-  "studio.app.welcome.title": "Selamat datang ke Live Studio"
+  "studio.app.welcome.title": "Selamat datang ke Live Studio",
+  "studio.app.wp.anonymous": "Tanpa nama",
+  "studio.app.wp.countdownTitle": "Kira detik",
+  "studio.app.wp.counterTitle": "Pembilang",
+  "studio.app.wp.event.follow": "mula mengikuti",
+  "studio.app.wp.event.gift": "menghantar {gift} ×{count}",
+  "studio.app.wp.event.member": "menjadi ahli",
+  "studio.app.wp.goal.coins": "syiling",
+  "studio.app.wp.goal.followers": "pengikut baharu",
+  "studio.app.wp.goal.gifts": "hadiah",
+  "studio.app.wp.goal.members": "ahli baharu",
+  "studio.app.wp.goalTitle": "Sasaran siaran",
+  "studio.app.wp.rankingEmpty": "Belum ada hadiah dalam siaran ini",
+  "studio.app.wp.rankingTitle": "Penyokong teratas",
+  "studio.app.wp.sampleChat": "Hai! Ini mesej contoh.",
+  "studio.app.wp.sampleGift": "Mawar",
+  "studio.app.wp.sampleName": "Penonton Sini",
+  "studio.app.wp.sent": "menghantar {gift}"
 }

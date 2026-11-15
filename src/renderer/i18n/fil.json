@@ -262,5 +262,22 @@
   "studio.app.volume": "Volume ng {name}",
   "studio.app.welcome.body": "Mag-live mula sa iyong computer, diretso sa mga manonood mo sa Sini.",
   "studio.app.welcome.legal": "Sa pagpapatuloy, sumasang-ayon ka sa {terms} at {privacy} ng Sini.",
-  "studio.app.welcome.title": "Maligayang pagdating sa Live Studio"
+  "studio.app.welcome.title": "Maligayang pagdating sa Live Studio",
+  "studio.app.wp.anonymous": "Anonimo",
+  "studio.app.wp.countdownTitle": "Countdown",
+  "studio.app.wp.counterTitle": "Bilang",
+  "studio.app.wp.event.follow": "nag-follow",
+  "studio.app.wp.event.gift": "nagpadala ng {gift} ×{count}",
+  "studio.app.wp.event.member": "naging member",
+  "studio.app.wp.goal.coins": "coins",
+  "studio.app.wp.goal.followers": "bagong follower",
+  "studio.app.wp.goal.gifts": "gift",
+  "studio.app.wp.goal.members": "bagong member",
+  "studio.app.wp.goalTitle": "Layunin ng stream",
+  "studio.app.wp.rankingEmpty": "Wala pang gift sa stream na ito",
+  "studio.app.wp.rankingTitle": "Nangungunang supporter",
+  "studio.app.wp.sampleChat": "Hi! Ito ay halimbawang mensahe.",
+  "studio.app.wp.sampleGift": "Rosas",
+  "studio.app.wp.sampleName": "Manonood ng Sini",
+  "studio.app.wp.sent": "nagpadala ng {gift}"
 }

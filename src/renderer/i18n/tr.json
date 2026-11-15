@@ -262,5 +262,22 @@
   "studio.app.volume": "{name} ses düzeyi",
   "studio.app.welcome.body": "Bilgisayarından doğrudan Sini'deki izleyicilerine canlı yayın yap.",
   "studio.app.welcome.legal": "Devam ederek Sini'nin {terms} ve {privacy} metinlerini kabul etmiş olursun.",
-  "studio.app.welcome.title": "Live Studio'ya hoş geldin"
+  "studio.app.welcome.title": "Live Studio'ya hoş geldin",
+  "studio.app.wp.anonymous": "Anonim",
+  "studio.app.wp.countdownTitle": "Geri sayım",
+  "studio.app.wp.counterTitle": "Sayaç",
+  "studio.app.wp.event.follow": "takip etmeye başladı",
+  "studio.app.wp.event.gift": "{gift} ×{count} gönderdi",
+  "studio.app.wp.event.member": "üye oldu",
+  "studio.app.wp.goal.coins": "jeton",
+  "studio.app.wp.goal.followers": "yeni takipçi",
+  "studio.app.wp.goal.gifts": "hediye",
+  "studio.app.wp.goal.members": "yeni üye",
+  "studio.app.wp.goalTitle": "Yayın hedefi",
+  "studio.app.wp.rankingEmpty": "Bu yayında henüz hediye yok",
+  "studio.app.wp.rankingTitle": "En çok destekleyenler",
+  "studio.app.wp.sampleChat": "Merhaba! Bu bir örnek mesaj.",
+  "studio.app.wp.sampleGift": "Gül",
+  "studio.app.wp.sampleName": "Sini izleyicisi",
+  "studio.app.wp.sent": "{gift} gönderdi"
 }

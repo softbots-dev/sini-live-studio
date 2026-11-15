@@ -18,7 +18,16 @@ export function pickLocale(raw: string): string {
   return DICTS[base] ? base : "en";
 }
 
-type Translate = (key: string, params?: Record<string, string | number>) => string;
+export type Translate = (key: string, params?: Record<string, string | number>) => string;
+
+/** Penerjemah murni untuk satu bahasa — dipakai provider aplikasi dan halaman widget. */
+export function translator(locale: string): Translate {
+  const dict = DICTS[locale] ?? DICTS.en ?? {};
+  return (key, params) => {
+    const text = dict[key] ?? DICTS.en?.[key] ?? key;
+    return params ? text.replace(/\{(\w+)\}/g, (all, name: string) => (name in params ? String(params[name]) : all)) : text;
+  };
+}
 const Ctx = createContext<{ locale: string; t: Translate }>({ locale: "en", t: (k) => k });
 
 export function I18nProvider({ children }: { children: ReactNode }) {
@@ -30,11 +39,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
-  const dict = DICTS[locale] ?? DICTS.en ?? {};
-  const t: Translate = (key, params) => {
-    const text = dict[key] ?? DICTS.en?.[key] ?? key;
-    return params ? text.replace(/\{(\w+)\}/g, (all, name: string) => (name in params ? String(params[name]) : all)) : text;
-  };
+  const t = translator(locale);
   return <Ctx.Provider value={{ locale, t }}>{children}</Ctx.Provider>;
 }
 

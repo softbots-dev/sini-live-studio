@@ -262,5 +262,22 @@
   "studio.app.volume": "{name} 音量",
   "studio.app.welcome.body": "在電腦上直播，直達你在 Sini 的觀眾。",
   "studio.app.welcome.legal": "繼續即表示你同意 Sini 的{terms}和{privacy}。",
-  "studio.app.welcome.title": "歡迎使用 Live Studio"
+  "studio.app.welcome.title": "歡迎使用 Live Studio",
+  "studio.app.wp.anonymous": "匿名",
+  "studio.app.wp.countdownTitle": "倒數計時",
+  "studio.app.wp.counterTitle": "計數器",
+  "studio.app.wp.event.follow": "追蹤了主播",
+  "studio.app.wp.event.gift": "送出了{gift} ×{count}",
+  "studio.app.wp.event.member": "成為了會員",
+  "studio.app.wp.goal.coins": "金幣",
+  "studio.app.wp.goal.followers": "新追蹤",
+  "studio.app.wp.goal.gifts": "禮物",
+  "studio.app.wp.goal.members": "新會員",
+  "studio.app.wp.goalTitle": "直播目標",
+  "studio.app.wp.rankingEmpty": "本場直播還沒有禮物",
+  "studio.app.wp.rankingTitle": "打賞榜",
+  "studio.app.wp.sampleChat": "你好！這是一則範例訊息。",
+  "studio.app.wp.sampleGift": "玫瑰",
+  "studio.app.wp.sampleName": "Sini 觀眾",
+  "studio.app.wp.sent": "送出了{gift}"
 }

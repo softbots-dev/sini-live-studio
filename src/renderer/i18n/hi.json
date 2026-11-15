@@ -262,5 +262,22 @@
   "studio.app.volume": "{name} का वॉल्यूम",
   "studio.app.welcome.body": "अपने कंप्यूटर से लाइव जाएँ, सीधे Sini पर अपने दर्शकों तक।",
   "studio.app.welcome.legal": "जारी रखकर, आप Sini की {terms} और {privacy} से सहमत होते हैं।",
-  "studio.app.welcome.title": "Live Studio में आपका स्वागत है"
+  "studio.app.welcome.title": "Live Studio में आपका स्वागत है",
+  "studio.app.wp.anonymous": "गुमनाम",
+  "studio.app.wp.countdownTitle": "उलटी गिनती",
+  "studio.app.wp.counterTitle": "काउंटर",
+  "studio.app.wp.event.follow": "ने फ़ॉलो करना शुरू किया",
+  "studio.app.wp.event.gift": "ने {gift} ×{count} भेजा",
+  "studio.app.wp.event.member": "सदस्य बने",
+  "studio.app.wp.goal.coins": "सिक्के",
+  "studio.app.wp.goal.followers": "नए फ़ॉलोअर",
+  "studio.app.wp.goal.gifts": "गिफ्ट",
+  "studio.app.wp.goal.members": "नए सदस्य",
+  "studio.app.wp.goalTitle": "स्ट्रीम लक्ष्य",
+  "studio.app.wp.rankingEmpty": "इस स्ट्रीम में अभी कोई गिफ्ट नहीं",
+  "studio.app.wp.rankingTitle": "शीर्ष समर्थक",
+  "studio.app.wp.sampleChat": "नमस्ते! यह एक नमूना संदेश है।",
+  "studio.app.wp.sampleGift": "गुलाब",
+  "studio.app.wp.sampleName": "Sini दर्शक",
+  "studio.app.wp.sent": "ने {gift} भेजा"
 }

@@ -262,5 +262,22 @@
   "studio.app.volume": "{name}の音量",
   "studio.app.welcome.body": "パソコンから Sini の視聴者へ直接ライブ配信。",
   "studio.app.welcome.legal": "続行すると、Sini の{terms}と{privacy}に同意したことになります。",
-  "studio.app.welcome.title": "Live Studio へようこそ"
+  "studio.app.welcome.title": "Live Studio へようこそ",
+  "studio.app.wp.anonymous": "匿名",
+  "studio.app.wp.countdownTitle": "カウントダウン",
+  "studio.app.wp.counterTitle": "カウンター",
+  "studio.app.wp.event.follow": "フォローしました",
+  "studio.app.wp.event.gift": "{gift} ×{count} を贈りました",
+  "studio.app.wp.event.member": "メンバーになりました",
+  "studio.app.wp.goal.coins": "コイン",
+  "studio.app.wp.goal.followers": "新しいフォロワー",
+  "studio.app.wp.goal.gifts": "ギフト",
+  "studio.app.wp.goal.members": "新しいメンバー",
+  "studio.app.wp.goalTitle": "配信の目標",
+  "studio.app.wp.rankingEmpty": "この配信ではまだギフトがありません",
+  "studio.app.wp.rankingTitle": "トップサポーター",
+  "studio.app.wp.sampleChat": "こんにちは！これはサンプルメッセージです。",
+  "studio.app.wp.sampleGift": "バラ",
+  "studio.app.wp.sampleName": "Siniの視聴者",
+  "studio.app.wp.sent": "{gift}を贈りました"
 }

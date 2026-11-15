@@ -262,5 +262,22 @@
   "studio.app.volume": "{name} 볼륨",
   "studio.app.welcome.body": "컴퓨터에서 Sini 시청자에게 바로 라이브하세요.",
   "studio.app.welcome.legal": "계속하면 Sini의 {terms} 및 {privacy}에 동의하게 됩니다.",
-  "studio.app.welcome.title": "Live Studio에 오신 것을 환영합니다"
+  "studio.app.welcome.title": "Live Studio에 오신 것을 환영합니다",
+  "studio.app.wp.anonymous": "익명",
+  "studio.app.wp.countdownTitle": "카운트다운",
+  "studio.app.wp.counterTitle": "카운터",
+  "studio.app.wp.event.follow": "팔로우했어요",
+  "studio.app.wp.event.gift": "{gift} ×{count}을(를) 보냈어요",
+  "studio.app.wp.event.member": "멤버가 되었어요",
+  "studio.app.wp.goal.coins": "코인",
+  "studio.app.wp.goal.followers": "새 팔로워",
+  "studio.app.wp.goal.gifts": "선물",
+  "studio.app.wp.goal.members": "새 멤버",
+  "studio.app.wp.goalTitle": "방송 목표",
+  "studio.app.wp.rankingEmpty": "이 방송에 아직 선물이 없어요",
+  "studio.app.wp.rankingTitle": "최고 후원자",
+  "studio.app.wp.sampleChat": "안녕하세요! 예시 메시지입니다.",
+  "studio.app.wp.sampleGift": "장미",
+  "studio.app.wp.sampleName": "Sini 시청자",
+  "studio.app.wp.sent": "{gift}을(를) 보냈어요"
 }
