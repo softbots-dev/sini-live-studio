@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 /*
-  Kamus aplikasi (dibuat `npm run studio:i18n` dari studio/i18n/*.json, 20 bahasa). Bahasa mengikuti
-  bahasa Windows; yang tidak didukung jatuh ke bahasa Inggris.
+  Kamus aplikasi (dibuat `npm run studio:i18n` dari studio/i18n/*.json, 20 bahasa). Bahasa = pilihan di
+  Pengaturan/sambutan (event `locale`, berlaku seketika) atau bahasa Windows; yang tidak didukung → Inggris.
 */
 const files = import.meta.glob<Record<string, string>>("./i18n/*.json", { eager: true, import: "default" });
 const DICTS: Record<string, Record<string, string>> = Object.fromEntries(
@@ -25,6 +25,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState("en");
   useEffect(() => {
     void window.studio.locale().then((raw) => setLocale(pickLocale(raw)));
+    return window.studio.on<string>("locale", (raw) => setLocale(pickLocale(raw)));
   }, []);
   useEffect(() => {
     document.documentElement.lang = locale;

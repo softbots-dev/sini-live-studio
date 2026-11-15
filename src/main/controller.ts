@@ -10,6 +10,7 @@ import { webOrigin } from "./config.mjs";
 import { createCookieJar, createHttp, StudioHttpError } from "./http.mjs";
 import { runLink, siteLocale } from "./link.mjs";
 import { liveMaintenance } from "./maintenance.mjs";
+import { createPerfPoller } from "./perf.mjs";
 import { menuTemplate } from "./menu.mjs";
 import { createSelectionOverlay, type Frame } from "./overlay.js";
 import { CANVAS, createSceneManager, validateSourceSettings } from "./scene-manager.mjs";
@@ -25,12 +26,16 @@ type User = { id: string; username: string; displayName: string; avatarUrl: stri
 type Account = { status: "loading" | "signedOut" | "signedIn"; user: User | null };
 
 /** Halaman web yang boleh dibuka studio di browser (selain halaman sambungan). */
-const EXTERNAL_PATHS = new Set(["/become-streamer/", "/dashboard/monetization/", "/settings/?tab=security", "/studio/"]);
+const EXTERNAL_PATHS = new Set(["/become-streamer/", "/dashboard/", "/dashboard/monetization/", "/settings/?tab=security", "/studio/", "/p/terms-of-service/", "/p/privacy-policy/"]);
+/** Bahasa yang bisa dipilih di studio (sama dengan bahasa situs). */
+const LOCALES = ["id", "en", "de", "es", "fil", "fr", "hi", "it", "ja", "ko", "ms", "nl", "pl", "pt-br", "ru", "th", "tr", "vi", "zh-cn", "zh-tw"];
 
 export function startController(win: BrowserWindow) {
   const origin = webOrigin({ packaged: app.isPackaged, env: process.env });
   const selection = createSelectionOverlay(win);
-  const locale = siteLocale(app.getLocale());
+  /** Bahasa pilihan pengguna (Pengaturan) atau bahasa sistem — juga bahasa halaman sini.live yang dibuka. */
+  const rawLocale = () => readSettings().locale ?? app.getLocale();
+  const siteLang = () => siteLocale(rawLocale());
   const jar = createCookieJar(sessionStore.load() ?? {}, (cookies: Record<string, string>) => {
     if (Object.keys(cookies).length) sessionStore.save(cookies);
     else sessionStore.clear();
@@ -115,6 +120,7 @@ export function startController(win: BrowserWindow) {
       if (msg.type === "room.state") chatStatus = "connected";
       if (msg.type === "socket.closed") chatStatus = "connecting";
       if (msg.type === "chat.rejected") send("chat.rejected", { code: msg.data?.code ?? null });
+      if (msg.type === "stats.changed") perf.refresh();
       chat.apply(msg);
       pushChat();
     },
@@ -189,9 +195,9 @@ export function startController(win: BrowserWindow) {
   });
 
   const settingsFile = () => join(app.getPath("userData"), "settings.json");
-  function readSettings(): { encoder?: string } {
+  function readSettings(): { encoder?: string; locale?: string } {
     try {
-      return JSON.parse(readFileSync(settingsFile(), "utf8")) as { encoder?: string };
+      return JSON.parse(readFileSync(settingsFile(), "utf8")) as { encoder?: string; locale?: string };
     } catch {
       return {};
     }
@@ -250,6 +256,17 @@ export function startController(win: BrowserWindow) {
   const pushScenes = () => scenes && send("scenes", scenes.snapshot());
 
   // ── Mesin status siaran ───────────────────────────────────────────────────
+  let perfValue: unknown = { session: null };
+  const perf = createPerfPoller({
+    fetch: async () => (await http.get("/me/channel/live-stats")).data,
+    now: Date.now,
+    setTimer: (fn: () => void, ms: number) => setTimeout(fn, ms),
+    clearTimer: (id: NodeJS.Timeout) => clearTimeout(id),
+    onChange: (value: unknown) => {
+      perfValue = value;
+      send("perf", value);
+    },
+  });
   const machine = createBroadcastMachine({
     http,
     engine: {
@@ -262,6 +279,8 @@ export function startController(win: BrowserWindow) {
     clearTimer: (id: NodeJS.Timeout) => clearTimeout(id),
     onChange: (state: { phase: string; channel?: { slug: string | null } | null }) => {
       send("broadcast", state);
+      if (state.phase === "live") perf.start();
+      else if (!["connecting", "reconnecting"].includes(state.phase)) perf.stop();
       if (state.channel?.slug && account.status === "signedIn") joinRoom(state.channel.slug);
       const active = ["starting", "connecting", "live", "reconnecting"].includes(state.phase);
       if (active && !statsTimer) statsTimer = setInterval(() => send("stats", engine.stats()), 1000);
@@ -306,8 +325,14 @@ export function startController(win: BrowserWindow) {
     return scenes;
   };
 
-  handle("app.locale", () => app.getLocale());
-  handle("app.info", () => ({ version: app.getVersion(), origin, locale }));
+  handle("app.locale", () => rawLocale());
+  handle("app.info", () => ({ version: app.getVersion(), origin, locale: siteLang() }));
+  handle("settings.setLocale", (code: string | null) => {
+    if (code !== null && !LOCALES.includes(code)) return;
+    const next = { ...readSettings(), locale: code ?? undefined };
+    writeFileSync(settingsFile(), JSON.stringify(next));
+    send("locale", rawLocale());
+  });
   handle("account.get", () => account);
   handle("engine.get", () => ({ ready: engineReady, error: engineError }));
 
@@ -316,7 +341,7 @@ export function startController(win: BrowserWindow) {
     const ctl = new AbortController();
     linkAbort = ctl;
     try {
-      const result = await runLink({ http: rawHttp, locale, openExternal: (u: string) => shell.openExternal(u), onCode: (code: string) => send("link.code", code), signal: ctl.signal });
+      const result = await runLink({ http: rawHttp, locale: siteLang(), openExternal: (u: string) => shell.openExternal(u), onCode: (code: string) => send("link.code", code), signal: ctl.signal });
       if (result === "linked") await refreshAccount();
       return result;
     } catch (err) {
@@ -342,8 +367,14 @@ export function startController(win: BrowserWindow) {
   });
 
   handle("open.web", (path: string) => {
-    if (EXTERNAL_PATHS.has(path)) void shell.openExternal(`${origin}/${locale}${path}`);
+    if (EXTERNAL_PATHS.has(path)) void shell.openExternal(`${origin}/${siteLang()}${path}`);
   });
+  /** Halaman channel sendiri di sini.live (slug dari kesiapan siaran). */
+  handle("open.channel", () => {
+    const slug = (machine.snapshot() as { channel?: { slug?: string | null } | null }).channel?.slug;
+    if (slug && /^[a-z0-9-]{1,80}$/.test(slug)) void shell.openExternal(`${origin}/${siteLang()}/channel/${slug}/`);
+  });
+  handle("perf.get", () => perfValue);
 
   handle("catalog.categories", async () => {
     try {

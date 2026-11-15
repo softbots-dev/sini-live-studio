@@ -26,6 +26,9 @@ function createWindow() {
     minHeight: 720,
     backgroundColor: "#08070b",
     title: "Sini Live Studio",
+    // Bilah judul milik aplikasi (logo, judul siaran, akun) dengan tombol jendela asli Windows di kanan.
+    titleBarStyle: "hidden",
+    titleBarOverlay: { color: "#0b0a10", symbolColor: "#9a95ad", height: 40 },
     show: false,
     webPreferences: {
       preload: join(here, "../preload/index.cjs"),
