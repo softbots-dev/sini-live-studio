@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "パソコンの音声",
   "studio.app.kind.window_capture": "ウィンドウ",
   "studio.app.landscape": "横向き 16:9",
+  "studio.app.language": "言語",
+  "studio.app.languageSystem": "システムの言語を使用",
   "studio.app.lastScene": "シーンは1つ以上必要です。",
   "studio.app.link.body": "ライブ配信に使っているSiniアカウントで、ブラウザからサインインしてください。ストリームキーをコピーする必要はありません。",
   "studio.app.link.button": "ブラウザでログイン",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "準備中…",
   "studio.app.portrait": "縦向き 9:16",
   "studio.app.preview": "配信プレビュー",
+  "studio.app.privacy": "プライバシーポリシー",
   "studio.app.prop.chooseFile": "画像を選択",
   "studio.app.prop.crop": "切り抜き（ピクセル）",
   "studio.app.prop.cropBottom": "下",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "まもなく視聴者にあなたの配信が表示されます。",
   "studio.app.sources": "ソース",
   "studio.app.start": "ライブ開始",
+  "studio.app.terms": "利用規約",
   "studio.app.titleLabel": "配信タイトル",
   "studio.app.titlePlaceholder": "配信のタイトル",
   "studio.app.unlock": "位置のロックを解除",
   "studio.app.unmute": "{name}のミュートを解除",
   "studio.app.version": "バージョン {version}",
   "studio.app.viewers": "視聴者 {count}人",
-  "studio.app.volume": "{name}の音量"
+  "studio.app.volume": "{name}の音量",
+  "studio.app.welcome.body": "パソコンから Sini の視聴者へ直接ライブ配信。",
+  "studio.app.welcome.legal": "続行すると、Sini の{terms}と{privacy}に同意したことになります。",
+  "studio.app.welcome.title": "Live Studio へようこそ"
 }

@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "Audio komputer",
   "studio.app.kind.window_capture": "Jendela",
   "studio.app.landscape": "Mendatar 16:9",
+  "studio.app.language": "Bahasa",
+  "studio.app.languageSystem": "Ikuti bahasa sistem",
   "studio.app.lastScene": "Minimal harus ada satu scene.",
   "studio.app.link.body": "Masuk lewat browser dengan akun Sini yang kamu pakai untuk siaran. Kamu tidak perlu menyalin stream key.",
   "studio.app.link.button": "Masuk lewat browser",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "Menyiapkan…",
   "studio.app.portrait": "Tegak 9:16",
   "studio.app.preview": "Pratinjau siaran",
+  "studio.app.privacy": "Kebijakan Privasi",
   "studio.app.prop.chooseFile": "Pilih gambar",
   "studio.app.prop.crop": "Potong (piksel)",
   "studio.app.prop.cropBottom": "Bawah",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "Penonton akan segera melihatmu.",
   "studio.app.sources": "Sumber",
   "studio.app.start": "Mulai Live",
+  "studio.app.terms": "Syarat Layanan",
   "studio.app.titleLabel": "Judul siaran",
   "studio.app.titlePlaceholder": "Judul siaranmu",
   "studio.app.unlock": "Buka kunci posisi",
   "studio.app.unmute": "Bunyikan {name}",
   "studio.app.version": "Versi {version}",
   "studio.app.viewers": "{count} penonton",
-  "studio.app.volume": "Volume {name}"
+  "studio.app.volume": "Volume {name}",
+  "studio.app.welcome.body": "Siaran dari komputer langsung ke penontonmu di Sini.",
+  "studio.app.welcome.legal": "Dengan melanjutkan, kamu menyetujui {terms} dan {privacy} Sini.",
+  "studio.app.welcome.title": "Selamat datang di Live Studio"
 }

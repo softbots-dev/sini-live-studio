@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "电脑音频",
   "studio.app.kind.window_capture": "窗口",
   "studio.app.landscape": "横屏 16:9",
+  "studio.app.language": "语言",
+  "studio.app.languageSystem": "使用系统语言",
   "studio.app.lastScene": "至少需要保留一个场景。",
   "studio.app.link.body": "请在浏览器中使用你用来直播的 Sini 账号登录。你无需复制推流密钥。",
   "studio.app.link.button": "通过浏览器登录",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "准备中…",
   "studio.app.portrait": "竖屏 9:16",
   "studio.app.preview": "直播预览",
+  "studio.app.privacy": "隐私政策",
   "studio.app.prop.chooseFile": "选择图片",
   "studio.app.prop.crop": "裁剪（像素）",
   "studio.app.prop.cropBottom": "下",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "观众很快就能看到你。",
   "studio.app.sources": "来源",
   "studio.app.start": "开始直播",
+  "studio.app.terms": "服务条款",
   "studio.app.titleLabel": "直播标题",
   "studio.app.titlePlaceholder": "你的直播标题",
   "studio.app.unlock": "解锁位置",
   "studio.app.unmute": "取消静音 {name}",
   "studio.app.version": "版本 {version}",
   "studio.app.viewers": "{count} 位观众",
-  "studio.app.volume": "{name} 音量"
+  "studio.app.volume": "{name} 音量",
+  "studio.app.welcome.body": "在电脑上直播，直达你在 Sini 的观众。",
+  "studio.app.welcome.legal": "继续即表示你同意 Sini 的{terms}和{privacy}。",
+  "studio.app.welcome.title": "欢迎使用 Live Studio"
 }

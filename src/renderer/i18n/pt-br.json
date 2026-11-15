@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "Áudio do computador",
   "studio.app.kind.window_capture": "Janela",
   "studio.app.landscape": "Paisagem 16:9",
+  "studio.app.language": "Idioma",
+  "studio.app.languageSystem": "Usar o idioma do sistema",
   "studio.app.lastScene": "É preciso ter pelo menos uma cena.",
   "studio.app.link.body": "Entre pelo navegador com a conta Sini que você usa para transmitir. Você não precisa copiar a chave de transmissão.",
   "studio.app.link.button": "Entrar pelo navegador",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "Preparando…",
   "studio.app.portrait": "Retrato 9:16",
   "studio.app.preview": "Prévia da transmissão",
+  "studio.app.privacy": "Política de Privacidade",
   "studio.app.prop.chooseFile": "Escolher imagem",
   "studio.app.prop.crop": "Cortar (pixels)",
   "studio.app.prop.cropBottom": "Inferior",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "Os espectadores vão ver você em instantes.",
   "studio.app.sources": "Fontes",
   "studio.app.start": "Iniciar live",
+  "studio.app.terms": "Termos de Serviço",
   "studio.app.titleLabel": "Título da live",
   "studio.app.titlePlaceholder": "O título da sua live",
   "studio.app.unlock": "Destravar posição",
   "studio.app.unmute": "Reativar o som de {name}",
   "studio.app.version": "Versão {version}",
   "studio.app.viewers": "{count} espectadores",
-  "studio.app.volume": "Volume de {name}"
+  "studio.app.volume": "Volume de {name}",
+  "studio.app.welcome.body": "Faça lives do seu computador direto para seus espectadores no Sini.",
+  "studio.app.welcome.legal": "Ao continuar, você concorda com os {terms} e a {privacy} do Sini.",
+  "studio.app.welcome.title": "Boas-vindas ao Live Studio"
 }

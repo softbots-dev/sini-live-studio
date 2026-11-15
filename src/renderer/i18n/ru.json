@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "Звук компьютера",
   "studio.app.kind.window_capture": "Окно",
   "studio.app.landscape": "Горизонтальная 16:9",
+  "studio.app.language": "Язык",
+  "studio.app.languageSystem": "Язык системы",
   "studio.app.lastScene": "Должна остаться хотя бы одна сцена.",
   "studio.app.link.body": "Войди через браузер в аккаунт Sini, с которого ты ведёшь эфиры. Копировать ключ трансляции не нужно.",
   "studio.app.link.button": "Войти через браузер",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "Подготовка…",
   "studio.app.portrait": "Вертикальная 9:16",
   "studio.app.preview": "Предпросмотр трансляции",
+  "studio.app.privacy": "Политику конфиденциальности",
   "studio.app.prop.chooseFile": "Выбрать изображение",
   "studio.app.prop.crop": "Обрезка (пиксели)",
   "studio.app.prop.cropBottom": "Снизу",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "Зрители скоро тебя увидят.",
   "studio.app.sources": "Источники",
   "studio.app.start": "Начать LIVE",
+  "studio.app.terms": "Условия использования",
   "studio.app.titleLabel": "Название трансляции",
   "studio.app.titlePlaceholder": "Название твоей трансляции",
   "studio.app.unlock": "Открепить положение",
   "studio.app.unmute": "Включить звук: {name}",
   "studio.app.version": "Версия {version}",
   "studio.app.viewers": "Зрителей: {count}",
-  "studio.app.volume": "Громкость: {name}"
+  "studio.app.volume": "Громкость: {name}",
+  "studio.app.welcome.body": "Выходите в эфир с компьютера — прямо к своим зрителям в Sini.",
+  "studio.app.welcome.legal": "Продолжая, вы принимаете {terms} и {privacy} Sini.",
+  "studio.app.welcome.title": "Добро пожаловать в Live Studio"
 }

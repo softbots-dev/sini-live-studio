@@ -513,7 +513,7 @@ export function startController(win: BrowserWindow) {
   handle("display.area", () => engine.previewArea());
   handle("canvas.get", () => (scenes ? CANVAS[scenes.orientation() as "landscape" | "portrait"] : CANVAS.landscape));
 
-  handle("settings.get", () => ({ encoder: readSettings().encoder ?? null, encoders: engineReady ? engine.encoders() : [] }));
+  handle("settings.get", () => ({ encoder: readSettings().encoder ?? null, encoders: engineReady ? engine.encoders() : [], locale: readSettings().locale ?? null }));
   handle("settings.setEncoder", (id: string | null) => {
     const next = { ...readSettings(), encoder: id ?? undefined };
     writeFileSync(settingsFile(), JSON.stringify(next));

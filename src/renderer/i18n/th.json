@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "เสียงจากคอมพิวเตอร์",
   "studio.app.kind.window_capture": "หน้าต่าง",
   "studio.app.landscape": "แนวนอน 16:9",
+  "studio.app.language": "ภาษา",
+  "studio.app.languageSystem": "ใช้ภาษาของระบบ",
   "studio.app.lastScene": "ต้องมีอย่างน้อยหนึ่งฉาก",
   "studio.app.link.body": "เข้าสู่ระบบผ่านเบราว์เซอร์ด้วยบัญชี Sini ที่คุณใช้ไลฟ์ ไม่ต้องคัดลอกสตรีมคีย์",
   "studio.app.link.button": "ลงชื่อเข้าใช้ผ่านเบราว์เซอร์",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "กำลังเตรียม…",
   "studio.app.portrait": "แนวตั้ง 9:16",
   "studio.app.preview": "ตัวอย่างไลฟ์",
+  "studio.app.privacy": "นโยบายความเป็นส่วนตัว",
   "studio.app.prop.chooseFile": "เลือกรูปภาพ",
   "studio.app.prop.crop": "ครอป (พิกเซล)",
   "studio.app.prop.cropBottom": "ล่าง",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "ผู้ชมจะเห็นคุณในอีกไม่นาน",
   "studio.app.sources": "แหล่งที่มา",
   "studio.app.start": "เริ่มไลฟ์",
+  "studio.app.terms": "ข้อกำหนดในการให้บริการ",
   "studio.app.titleLabel": "ชื่อไลฟ์",
   "studio.app.titlePlaceholder": "ชื่อไลฟ์ของคุณ",
   "studio.app.unlock": "ปลดล็อกตำแหน่ง",
   "studio.app.unmute": "เปิดเสียง {name}",
   "studio.app.version": "เวอร์ชัน {version}",
   "studio.app.viewers": "ผู้ชม {count} คน",
-  "studio.app.volume": "ระดับเสียง {name}"
+  "studio.app.volume": "ระดับเสียง {name}",
+  "studio.app.welcome.body": "ไลฟ์จากคอมพิวเตอร์ของคุณ ตรงถึงผู้ชมบน Sini",
+  "studio.app.welcome.legal": "การดำเนินการต่อถือว่าคุณยอมรับ{terms}และ{privacy}ของ Sini",
+  "studio.app.welcome.title": "ยินดีต้อนรับสู่ Live Studio"
 }

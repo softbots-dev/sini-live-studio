@@ -142,3 +142,33 @@ input[type="range"] { accent-color: var(--brand); }
 .gift-row { display: flex; justify-content: space-between; gap: 0.5rem; font-size: var(--text-sm); }
 
 .panel-tools { display: flex; gap: 0.125rem; padding: 0.25rem; border-top: 1px solid var(--line); margin-top: auto; }
+
+/* ── Bilah judul (40 px, tombol jendela asli Windows di kanan) ───────────── */
+.app-shell { height: 100%; display: grid; grid-template-rows: 40px minmax(0, 1fr); }
+.app-shell > .splash { height: auto; }
+.titlebar { height: 40px; display: flex; align-items: center; gap: 0.75rem; padding: 0 140px 0 0.875rem; background: #0b0a10; border-bottom: 1px solid var(--line); -webkit-app-region: drag; position: relative; z-index: 5; }
+.titlebar button, .titlebar select, .titlebar input, .titlebar a { -webkit-app-region: no-drag; }
+.titlebar-brand { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-display); font-weight: 700; font-size: var(--text-sm); white-space: nowrap; }
+.titlebar-center { flex: 1; display: flex; justify-content: center; min-width: 0; }
+.titlebar-right { display: flex; align-items: center; gap: 0.25rem; }
+.link-inline { border: 0; background: none; padding: 0; font: inherit; color: var(--fg-muted); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.link-inline:hover { color: var(--fg); }
+
+/* ── Sambutan ─────────────────────────────────────────────────────────── */
+.welcome-shell { height: 100%; display: grid; grid-template-rows: 40px minmax(0, 1fr); }
+.welcome { position: relative; overflow: hidden; display: grid; align-items: center; padding: 2rem clamp(2.5rem, 7vw, 6rem) 5.5rem; }
+.welcome-arc { position: absolute; left: -6rem; top: -6rem; width: 17rem; height: 17rem; border-radius: 50%; border: 3rem solid var(--brand); pointer-events: none; }
+.welcome-orb { position: absolute; right: -12rem; bottom: -17rem; width: 40rem; height: 40rem; border-radius: 50%; background: radial-gradient(circle at 30% 30%, var(--accent), var(--brand) 70%); opacity: 0.9; pointer-events: none; }
+.welcome-hero { position: relative; max-width: 40rem; display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; }
+.welcome-brand { display: flex; align-items: center; gap: 0.625rem; }
+.welcome-word { font-family: var(--font-display); font-weight: 800; font-size: 1.375rem; }
+.welcome-tag { background: var(--accent); color: #fff; font-weight: 700; font-size: var(--text-sm); padding: 0.125rem 0.5rem; border-radius: 0.3125rem; }
+.welcome-hero h1 { font-size: clamp(2.25rem, 4.2vw, 3.25rem); line-height: 1.08; letter-spacing: -0.02em; margin-top: 0.75rem; }
+.welcome-hero > p { color: #c9c4d8; font-size: var(--text-base); margin: 0 0 0.75rem; }
+.welcome-cta { min-width: 15rem; height: 3rem; }
+.welcome-card { position: relative; justify-self: center; width: min(30rem, 100%); display: flex; flex-direction: column; align-items: center; gap: 0.875rem; text-align: center; padding: 2rem; background: rgb(18 17 26 / 0.92); border: 1px solid var(--line-strong); border-radius: 1rem; box-shadow: 0 30px 80px rgb(0 0 0 / 0.5); }
+.welcome-card h1 { font-size: var(--text-xl); }
+.welcome-card p { margin: 0; }
+.welcome-legal { position: absolute; left: 0; right: 0; bottom: 1.25rem; text-align: center; font-size: var(--text-2xs); color: var(--fg-subtle); }
+.welcome-legal p { margin: 0.125rem 0; }
+.welcome-legal .link-inline { color: var(--fg-muted); }

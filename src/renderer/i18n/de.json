@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "Computer-Audio",
   "studio.app.kind.window_capture": "Fenster",
   "studio.app.landscape": "Querformat 16:9",
+  "studio.app.language": "Sprache",
+  "studio.app.languageSystem": "Systemsprache verwenden",
   "studio.app.lastScene": "Es muss mindestens eine Szene geben.",
   "studio.app.link.body": "Melde dich im Browser mit dem Sini-Konto an, mit dem du live gehst. Du musst keinen Stream-Key kopieren.",
   "studio.app.link.button": "Im Browser anmelden",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "Wird vorbereitet…",
   "studio.app.portrait": "Hochformat 9:16",
   "studio.app.preview": "Stream-Vorschau",
+  "studio.app.privacy": "Datenschutzerklärung",
   "studio.app.prop.chooseFile": "Bild auswählen",
   "studio.app.prop.crop": "Zuschneiden (Pixel)",
   "studio.app.prop.cropBottom": "Unten",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "Die Zuschauer sehen dich gleich.",
   "studio.app.sources": "Quellen",
   "studio.app.start": "Live gehen",
+  "studio.app.terms": "Nutzungsbedingungen",
   "studio.app.titleLabel": "Stream-Titel",
   "studio.app.titlePlaceholder": "Dein Stream-Titel",
   "studio.app.unlock": "Position entsperren",
   "studio.app.unmute": "Stummschaltung von {name} aufheben",
   "studio.app.version": "Version {version}",
   "studio.app.viewers": "{count} Zuschauer",
-  "studio.app.volume": "Lautstärke {name}"
+  "studio.app.volume": "Lautstärke {name}",
+  "studio.app.welcome.body": "Geh von deinem Computer aus live – direkt zu deinen Zuschauern auf Sini.",
+  "studio.app.welcome.legal": "Indem du fortfährst, stimmst du den {terms} und der {privacy} von Sini zu.",
+  "studio.app.welcome.title": "Willkommen bei Live Studio"
 }

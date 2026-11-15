@@ -306,7 +306,7 @@ export class ObsEngine {
       blendingMethod: osn.EBlendingMethod.Default,
     };
     const item = scene.add(src, info, this.video ?? undefined);
-    item.alignment = ALIGN[o.alignment] as osn.EAlignment;
+    item.alignment = ALIGN[o.alignment as keyof typeof ALIGN] as osn.EAlignment;
     map.set(itemKey, item.id);
   }
 
@@ -321,7 +321,7 @@ export class ObsEngine {
     const item = this.item(sceneId, itemKey);
     const o = obsTransform(t, { width: item.source.width, height: item.source.height });
     item.deferUpdateBegin();
-    item.alignment = ALIGN[o.alignment] as osn.EAlignment;
+    item.alignment = ALIGN[o.alignment as keyof typeof ALIGN] as osn.EAlignment;
     item.rotation = o.rotation;
     item.position = o.position;
     item.scale = o.scale;

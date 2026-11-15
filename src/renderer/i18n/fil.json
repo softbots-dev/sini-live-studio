@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "Audio ng computer",
   "studio.app.kind.window_capture": "Window",
   "studio.app.landscape": "Pahiga 16:9",
+  "studio.app.language": "Wika",
+  "studio.app.languageSystem": "Gamitin ang wika ng system",
   "studio.app.lastScene": "Dapat may kahit isang scene.",
   "studio.app.link.body": "Mag-sign in sa browser gamit ang Sini account na ginagamit mo sa pag-live. Hindi mo na kailangang kopyahin ang stream key.",
   "studio.app.link.button": "Mag-sign in sa browser",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "Naghahanda…",
   "studio.app.portrait": "Patayo 9:16",
   "studio.app.preview": "Preview ng stream",
+  "studio.app.privacy": "Patakaran sa Privacy",
   "studio.app.prop.chooseFile": "Pumili ng larawan",
   "studio.app.prop.crop": "I-crop (pixel)",
   "studio.app.prop.cropBottom": "Ibaba",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "Makikita ka na ng mga manonood.",
   "studio.app.sources": "Mga source",
   "studio.app.start": "Mag-Live na",
+  "studio.app.terms": "Mga Tuntunin ng Serbisyo",
   "studio.app.titleLabel": "Pamagat ng stream",
   "studio.app.titlePlaceholder": "Pamagat ng stream mo",
   "studio.app.unlock": "I-unlock ang posisyon",
   "studio.app.unmute": "I-unmute ang {name}",
   "studio.app.version": "Bersyon {version}",
   "studio.app.viewers": "{count} manonood",
-  "studio.app.volume": "Volume ng {name}"
+  "studio.app.volume": "Volume ng {name}",
+  "studio.app.welcome.body": "Mag-live mula sa iyong computer, diretso sa mga manonood mo sa Sini.",
+  "studio.app.welcome.legal": "Sa pagpapatuloy, sumasang-ayon ka sa {terms} at {privacy} ng Sini.",
+  "studio.app.welcome.title": "Maligayang pagdating sa Live Studio"
 }

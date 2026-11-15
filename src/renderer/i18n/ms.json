@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "Audio komputer",
   "studio.app.kind.window_capture": "Tetingkap",
   "studio.app.landscape": "Mendatar 16:9",
+  "studio.app.language": "Bahasa",
+  "studio.app.languageSystem": "Guna bahasa sistem",
   "studio.app.lastScene": "Sekurang-kurangnya satu babak diperlukan.",
   "studio.app.link.body": "Log masuk melalui pelayar dengan akaun Sini yang anda gunakan untuk siaran. Anda tidak perlu menyalin kunci strim.",
   "studio.app.link.button": "Log masuk melalui pelayar",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "Bersiap…",
   "studio.app.portrait": "Menegak 9:16",
   "studio.app.preview": "Pratonton siaran",
+  "studio.app.privacy": "Dasar Privasi",
   "studio.app.prop.chooseFile": "Pilih imej",
   "studio.app.prop.crop": "Pangkas (piksel)",
   "studio.app.prop.cropBottom": "Bawah",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "Penonton akan melihat anda sebentar lagi.",
   "studio.app.sources": "Sumber",
   "studio.app.start": "Mulakan Live",
+  "studio.app.terms": "Terma Perkhidmatan",
   "studio.app.titleLabel": "Tajuk siaran",
   "studio.app.titlePlaceholder": "Tajuk siaran anda",
   "studio.app.unlock": "Buka kunci kedudukan",
   "studio.app.unmute": "Nyahredam {name}",
   "studio.app.version": "Versi {version}",
   "studio.app.viewers": "{count} penonton",
-  "studio.app.volume": "Kelantangan {name}"
+  "studio.app.volume": "Kelantangan {name}",
+  "studio.app.welcome.body": "Bersiaran langsung dari komputer terus kepada penontonmu di Sini.",
+  "studio.app.welcome.legal": "Dengan meneruskan, anda bersetuju dengan {terms} dan {privacy} Sini.",
+  "studio.app.welcome.title": "Selamat datang ke Live Studio"
 }

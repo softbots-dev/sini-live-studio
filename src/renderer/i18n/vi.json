@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "Âm thanh máy tính",
   "studio.app.kind.window_capture": "Cửa sổ",
   "studio.app.landscape": "Ngang 16:9",
+  "studio.app.language": "Ngôn ngữ",
+  "studio.app.languageSystem": "Dùng ngôn ngữ hệ thống",
   "studio.app.lastScene": "Cần có ít nhất một cảnh.",
   "studio.app.link.body": "Đăng nhập qua trình duyệt bằng tài khoản Sini bạn dùng để phát trực tiếp. Bạn không cần sao chép khóa luồng.",
   "studio.app.link.button": "Đăng nhập qua trình duyệt",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "Đang chuẩn bị…",
   "studio.app.portrait": "Dọc 9:16",
   "studio.app.preview": "Xem trước buổi phát",
+  "studio.app.privacy": "Chính sách quyền riêng tư",
   "studio.app.prop.chooseFile": "Chọn hình ảnh",
   "studio.app.prop.crop": "Cắt (pixel)",
   "studio.app.prop.cropBottom": "Dưới",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "Người xem sẽ thấy bạn ngay thôi.",
   "studio.app.sources": "Nguồn",
   "studio.app.start": "Bắt đầu Live",
+  "studio.app.terms": "Điều khoản dịch vụ",
   "studio.app.titleLabel": "Tiêu đề buổi phát",
   "studio.app.titlePlaceholder": "Tiêu đề buổi phát của bạn",
   "studio.app.unlock": "Mở khóa vị trí",
   "studio.app.unmute": "Bật tiếng {name}",
   "studio.app.version": "Phiên bản {version}",
   "studio.app.viewers": "{count} người xem",
-  "studio.app.volume": "Âm lượng {name}"
+  "studio.app.volume": "Âm lượng {name}",
+  "studio.app.welcome.body": "Phát trực tiếp từ máy tính đến thẳng người xem của bạn trên Sini.",
+  "studio.app.welcome.legal": "Khi tiếp tục, bạn đồng ý với {terms} và {privacy} của Sini.",
+  "studio.app.welcome.title": "Chào mừng đến với Live Studio"
 }

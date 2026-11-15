@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "컴퓨터 오디오",
   "studio.app.kind.window_capture": "창",
   "studio.app.landscape": "가로 16:9",
+  "studio.app.language": "언어",
+  "studio.app.languageSystem": "시스템 언어 사용",
   "studio.app.lastScene": "씬은 최소 한 개가 있어야 해요.",
   "studio.app.link.body": "라이브 방송에 사용하는 Sini 계정으로 브라우저에서 로그인해 주세요. 스트림 키를 복사할 필요가 없어요.",
   "studio.app.link.button": "브라우저로 로그인",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "준비 중…",
   "studio.app.portrait": "세로 9:16",
   "studio.app.preview": "방송 미리보기",
+  "studio.app.privacy": "개인정보처리방침",
   "studio.app.prop.chooseFile": "이미지 선택",
   "studio.app.prop.crop": "자르기(픽셀)",
   "studio.app.prop.cropBottom": "아래",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "곧 시청자에게 방송이 보여요.",
   "studio.app.sources": "소스",
   "studio.app.start": "라이브 시작",
+  "studio.app.terms": "서비스 약관",
   "studio.app.titleLabel": "방송 제목",
   "studio.app.titlePlaceholder": "방송 제목을 입력하세요",
   "studio.app.unlock": "위치 잠금 해제",
   "studio.app.unmute": "{name} 음소거 해제",
   "studio.app.version": "버전 {version}",
   "studio.app.viewers": "시청자 {count}명",
-  "studio.app.volume": "{name} 볼륨"
+  "studio.app.volume": "{name} 볼륨",
+  "studio.app.welcome.body": "컴퓨터에서 Sini 시청자에게 바로 라이브하세요.",
+  "studio.app.welcome.legal": "계속하면 Sini의 {terms} 및 {privacy}에 동의하게 됩니다.",
+  "studio.app.welcome.title": "Live Studio에 오신 것을 환영합니다"
 }

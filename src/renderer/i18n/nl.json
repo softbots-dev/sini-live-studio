@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "Computeraudio",
   "studio.app.kind.window_capture": "Venster",
   "studio.app.landscape": "Liggend 16:9",
+  "studio.app.language": "Taal",
+  "studio.app.languageSystem": "Systeemtaal gebruiken",
   "studio.app.lastScene": "Je hebt minstens één scène nodig.",
   "studio.app.link.body": "Log in via je browser met het Sini-account waarmee je live gaat. Je hoeft geen streamkey te kopiëren.",
   "studio.app.link.button": "Inloggen via browser",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "Voorbereiden…",
   "studio.app.portrait": "Staand 9:16",
   "studio.app.preview": "Streamvoorbeeld",
+  "studio.app.privacy": "Privacybeleid",
   "studio.app.prop.chooseFile": "Afbeelding kiezen",
   "studio.app.prop.crop": "Bijsnijden (pixels)",
   "studio.app.prop.cropBottom": "Onder",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "Kijkers zien je zo meteen.",
   "studio.app.sources": "Bronnen",
   "studio.app.start": "Ga live",
+  "studio.app.terms": "Servicevoorwaarden",
   "studio.app.titleLabel": "Streamtitel",
   "studio.app.titlePlaceholder": "Je streamtitel",
   "studio.app.unlock": "Positie ontgrendelen",
   "studio.app.unmute": "Demping van {name} opheffen",
   "studio.app.version": "Versie {version}",
   "studio.app.viewers": "{count} kijkers",
-  "studio.app.volume": "Volume van {name}"
+  "studio.app.volume": "Volume van {name}",
+  "studio.app.welcome.body": "Ga live vanaf je computer, rechtstreeks naar je kijkers op Sini.",
+  "studio.app.welcome.legal": "Door verder te gaan, ga je akkoord met de {terms} en het {privacy} van Sini.",
+  "studio.app.welcome.title": "Welkom bij Live Studio"
 }

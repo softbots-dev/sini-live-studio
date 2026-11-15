@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "Computer audio",
   "studio.app.kind.window_capture": "Window",
   "studio.app.landscape": "Landscape 16:9",
+  "studio.app.language": "Language",
+  "studio.app.languageSystem": "Use system language",
   "studio.app.lastScene": "You need at least one scene.",
   "studio.app.link.body": "Sign in through your browser with the Sini account you go live with. You don't need to copy a stream key.",
   "studio.app.link.button": "Sign in with browser",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "Getting ready…",
   "studio.app.portrait": "Portrait 9:16",
   "studio.app.preview": "Stream preview",
+  "studio.app.privacy": "Privacy Policy",
   "studio.app.prop.chooseFile": "Choose image",
   "studio.app.prop.crop": "Crop (pixels)",
   "studio.app.prop.cropBottom": "Bottom",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "Viewers will see you shortly.",
   "studio.app.sources": "Sources",
   "studio.app.start": "Go Live",
+  "studio.app.terms": "Terms of Service",
   "studio.app.titleLabel": "Stream title",
   "studio.app.titlePlaceholder": "Your stream title",
   "studio.app.unlock": "Unlock position",
   "studio.app.unmute": "Unmute {name}",
   "studio.app.version": "Version {version}",
   "studio.app.viewers": "{count} viewers",
-  "studio.app.volume": "{name} volume"
+  "studio.app.volume": "{name} volume",
+  "studio.app.welcome.body": "Go live from your computer, straight to your viewers on Sini.",
+  "studio.app.welcome.legal": "By continuing, you agree to Sini's {terms} and {privacy}.",
+  "studio.app.welcome.title": "Welcome to Live Studio"
 }

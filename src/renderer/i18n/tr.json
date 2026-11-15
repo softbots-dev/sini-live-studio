@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "Bilgisayar sesi",
   "studio.app.kind.window_capture": "Pencere",
   "studio.app.landscape": "Yatay 16:9",
+  "studio.app.language": "Dil",
+  "studio.app.languageSystem": "Sistem dilini kullan",
   "studio.app.lastScene": "En az bir sahne olmalı.",
   "studio.app.link.body": "Yayın yaptığın Sini hesabıyla tarayıcıdan giriş yap. Yayın anahtarını kopyalaman gerekmez.",
   "studio.app.link.button": "Tarayıcıyla giriş yap",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "Hazırlanıyor…",
   "studio.app.portrait": "Dikey 9:16",
   "studio.app.preview": "Yayın önizlemesi",
+  "studio.app.privacy": "Gizlilik Politikası",
   "studio.app.prop.chooseFile": "Görsel seç",
   "studio.app.prop.crop": "Kırp (piksel)",
   "studio.app.prop.cropBottom": "Alt",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "İzleyiciler seni birazdan görecek.",
   "studio.app.sources": "Kaynaklar",
   "studio.app.start": "Canlı yayına geç",
+  "studio.app.terms": "Hizmet Şartları",
   "studio.app.titleLabel": "Yayın başlığı",
   "studio.app.titlePlaceholder": "Yayın başlığın",
   "studio.app.unlock": "Konum kilidini aç",
   "studio.app.unmute": "{name} sesini aç",
   "studio.app.version": "Sürüm {version}",
   "studio.app.viewers": "{count} izleyici",
-  "studio.app.volume": "{name} ses düzeyi"
+  "studio.app.volume": "{name} ses düzeyi",
+  "studio.app.welcome.body": "Bilgisayarından doğrudan Sini'deki izleyicilerine canlı yayın yap.",
+  "studio.app.welcome.legal": "Devam ederek Sini'nin {terms} ve {privacy} metinlerini kabul etmiş olursun.",
+  "studio.app.welcome.title": "Live Studio'ya hoş geldin"
 }

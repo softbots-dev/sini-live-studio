@@ -98,6 +98,8 @@
   "studio.app.kind.wasapi_output_capture": "कंप्यूटर ऑडियो",
   "studio.app.kind.window_capture": "विंडो",
   "studio.app.landscape": "लैंडस्केप 16:9",
+  "studio.app.language": "भाषा",
+  "studio.app.languageSystem": "सिस्टम की भाषा इस्तेमाल करें",
   "studio.app.lastScene": "कम से कम एक सीन होना ज़रूरी है।",
   "studio.app.link.body": "ब्राउज़र से उस Sini अकाउंट में साइन इन करें जिससे आप लाइव जाते हैं। आपको स्ट्रीम कुंजी कॉपी करने की ज़रूरत नहीं है।",
   "studio.app.link.button": "ब्राउज़र से साइन इन",
@@ -135,6 +137,7 @@
   "studio.app.phase.starting": "तैयारी हो रही है…",
   "studio.app.portrait": "पोर्ट्रेट 9:16",
   "studio.app.preview": "स्ट्रीम का प्रीव्यू",
+  "studio.app.privacy": "गोपनीयता नीति",
   "studio.app.prop.chooseFile": "इमेज चुनें",
   "studio.app.prop.crop": "क्रॉप करें (पिक्सल)",
   "studio.app.prop.cropBottom": "नीचे",
@@ -174,11 +177,15 @@
   "studio.app.slowStart": "दर्शक जल्द ही आपको देखेंगे।",
   "studio.app.sources": "सोर्स",
   "studio.app.start": "लाइव शुरू करें",
+  "studio.app.terms": "सेवा की शर्तों",
   "studio.app.titleLabel": "स्ट्रीम का शीर्षक",
   "studio.app.titlePlaceholder": "आपकी स्ट्रीम का शीर्षक",
   "studio.app.unlock": "जगह अनलॉक करें",
   "studio.app.unmute": "{name} अनम्यूट करें",
   "studio.app.version": "वर्शन {version}",
   "studio.app.viewers": "{count} दर्शक",
-  "studio.app.volume": "{name} का वॉल्यूम"
+  "studio.app.volume": "{name} का वॉल्यूम",
+  "studio.app.welcome.body": "अपने कंप्यूटर से लाइव जाएँ, सीधे Sini पर अपने दर्शकों तक।",
+  "studio.app.welcome.legal": "जारी रखकर, आप Sini की {terms} और {privacy} से सहमत होते हैं।",
+  "studio.app.welcome.title": "Live Studio में आपका स्वागत है"
 }
