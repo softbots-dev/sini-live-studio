@@ -11,8 +11,8 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: npm ci
@@ -21,9 +21,18 @@ jobs:
       - run: npm test
       - run: npm run typecheck
       - run: npm run build
-      - name: Installer & GitHub Release
+      - name: Installer
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-        run: npx electron-builder --win nsis --publish always
+        run: npx electron-builder --win nsis --publish never
+      # Satu langkah membuat rilis DAN mengunggah semua berkas. electron-builder --publish always mengunggah
+      # paralel dan bisa membuat dua rilis bertag sama (latest.yml terpisah dari installer → pembaruan
+      # otomatis tidak menemukannya).
+      - name: GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME#v}" --generate-notes
+          release/Sini-Live-Studio-Setup.exe release/Sini-Live-Studio-Setup.exe.blockmap release/latest.yml
