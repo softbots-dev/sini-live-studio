@@ -43,3 +43,23 @@ export const overlayStore = {
 export const useOverlayCount = () => useSyncExternalStore(overlayStore.subscribe, overlayStore.count);
 
 export type Result<T = unknown> = { ok: true; value: T } | { ok: false; code: string };
+
+/*
+  Dialog sumber (pengaturan / filter) yang dibuka dari daftar sumber ATAU dari menu klik kanan di pratinjau.
+  Dirender oleh panel Sumber.
+*/
+export type SourceDialog = { type: "edit" | "filters"; sourceId: string } | null;
+let sourceDialog: SourceDialog = null;
+const dialogListeners = new Set<() => void>();
+export const sourceDialogStore = {
+  open(next: SourceDialog) {
+    sourceDialog = next;
+    dialogListeners.forEach((l) => l());
+  },
+  subscribe(l: () => void) {
+    dialogListeners.add(l);
+    return () => dialogListeners.delete(l);
+  },
+  get: () => sourceDialog,
+};
+export const useSourceDialog = () => useSyncExternalStore(sourceDialogStore.subscribe, sourceDialogStore.get);

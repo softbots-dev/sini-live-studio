@@ -11,7 +11,7 @@ const INVOKE = new Set([
   "source.add", "source.update", "source.rename", "source.options", "source.pickImage",
   "item.set", "item.move", "item.remove", "item.select", "item.sizes",
   "audio.volume", "audio.mute", "audio.monitor", "filters.set",
-  "display.bounds", "display.hide", "display.area", "canvas.get", "settings.get", "settings.setEncoder",
+  "display.bounds", "display.hide", "display.area", "menu.popup", "overlay.draw", "canvas.get", "settings.get", "settings.setEncoder",
   "chat.get", "chat.send", "chat.delete", "chat.ban", "quit.confirm", "quit.cancel",
 ]);
 const EVENTS = new Set(["account", "engine", "link.code", "broadcast", "stats", "volmeter", "scenes", "chat", "chat.rejected", "quit.ask"]);

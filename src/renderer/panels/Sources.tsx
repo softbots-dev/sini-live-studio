@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Eye, EyeOff, Lock, LockOpen, Plus, Settings2, SlidersHorizontal, Trash2 } from "lucide-react";
 import type { Collection, Scene, Source } from "../screens/Studio";
 import { useT } from "../i18n";
-import type { Result } from "../store";
+import { sourceDialogStore, useSourceDialog, type Result } from "../store";
+import { openItemMenu } from "../item-menu";
 import { Button, Dialog, Field, IconButton } from "../ui";
 
 export const KINDS = ["dshow_input", "monitor_capture", "window_capture", "game_capture", "wasapi_input_capture", "wasapi_output_capture", "image_source", "text_gdiplus"] as const;
@@ -20,8 +21,11 @@ const DEFAULTS: Record<string, Record<string, unknown>> = {
 export function SourcesPanel({ collection, scene, selected, onSelect }: { collection: Collection | null; scene: Scene | null; selected: string | null; onSelect: (id: string | null) => void }) {
   const { t } = useT();
   const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState<string | null>(null);
-  const [filtering, setFiltering] = useState<string | null>(null);
+  const dialog = useSourceDialog();
+  const editing = dialog?.type === "edit" ? dialog.sourceId : null;
+  const filtering = dialog?.type === "filters" ? dialog.sourceId : null;
+  const setEditing = (id: string | null) => sourceDialogStore.open(id ? { type: "edit", sourceId: id } : null);
+  const setFiltering = (id: string | null) => sourceDialogStore.open(id ? { type: "filters", sourceId: id } : null);
   const [error, setError] = useState<string | null>(null);
   if (!collection || !scene) return null;
   const source = (id: string) => collection.sources.find((s) => s.id === id);
@@ -31,6 +35,19 @@ export function SourcesPanel({ collection, scene, selected, onSelect }: { collec
     const r = await window.studio.invoke<Result>(channel, ...args);
     setError(r.ok ? null : r.code === "scene_full" ? t("studio.app.sceneFull") : null);
     return r;
+  };
+
+  const showMenu = async (e: React.MouseEvent, item: Scene["items"][number]) => {
+    e.preventDefault();
+    const src = source(item.sourceId);
+    if (!src) return;
+    onSelect(item.id);
+    void window.studio.invoke("item.select", item.id);
+    const [sizes, canvas] = await Promise.all([
+      window.studio.invoke<Record<string, { width: number; height: number }>>("item.sizes"),
+      window.studio.invoke<{ width: number; height: number }>("canvas.get"),
+    ]);
+    if (await openItemMenu({ t, item, scene, source: src, size: sizes[item.id] ?? null, canvas })) onSelect(null);
   };
 
   const add = async (kind: string) => {
@@ -58,7 +75,7 @@ export function SourcesPanel({ collection, scene, selected, onSelect }: { collec
             const src = source(item.sourceId);
             if (!src) return null;
             return (
-              <li key={item.id} className={`list-row ${selected === item.id ? "is-active" : ""} ${item.visible ? "" : "is-muted"}`}>
+              <li key={item.id} className={`list-row ${selected === item.id ? "is-active" : ""} ${item.visible ? "" : "is-muted"}`} onContextMenu={(e) => void showMenu(e, item)}>
                 <button
                   type="button"
                   className="list-main"

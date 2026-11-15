@@ -1,7 +1,7 @@
 {
   "name": "sini-live-studio",
   "productName": "Sini Live Studio",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Sini Live Studio — siaran langsung ke Sini dari komputer, di atas libobs.",
   "private": true,
   "license": "GPL-2.0-or-later",

@@ -1,4 +1,4 @@
-import { app, dialog, ipcMain, shell, type BrowserWindow } from "electron";
+import { app, dialog, ipcMain, Menu, shell, type BrowserWindow } from "electron";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
@@ -10,6 +10,8 @@ import { webOrigin } from "./config.mjs";
 import { createCookieJar, createHttp, StudioHttpError } from "./http.mjs";
 import { runLink, siteLocale } from "./link.mjs";
 import { liveMaintenance } from "./maintenance.mjs";
+import { menuTemplate } from "./menu.mjs";
+import { createSelectionOverlay, type Frame } from "./overlay.js";
 import { CANVAS, createSceneManager } from "./scene-manager.mjs";
 import { sessionStore } from "./session-store.js";
 import { ObsEngine, SOURCE_KINDS, type FilterKind, type Profile, type SourceKind } from "./engine/obs.js";
@@ -27,6 +29,7 @@ const EXTERNAL_PATHS = new Set(["/become-streamer/", "/dashboard/monetization/",
 
 export function startController(win: BrowserWindow) {
   const origin = webOrigin({ packaged: app.isPackaged, env: process.env });
+  const selection = createSelectionOverlay(win);
   const locale = siteLocale(app.getLocale());
   const jar = createCookieJar(sessionStore.load() ?? {}, (cookies: Record<string, string>) => {
     if (Object.keys(cookies).length) sessionStore.save(cookies);
@@ -146,6 +149,16 @@ export function startController(win: BrowserWindow) {
 
   function setAccount(next: Account) {
     account = next;
+    // Pratinjau adalah jendela native di atas halaman: tanpa ini ia tetap menutupi layar masuk sebagai
+    // kotak hitam setelah keluar.
+    if (next.status !== "signedIn") selection.hide();
+    if (next.status !== "signedIn" && engineReady) {
+      try {
+        engine.hideDisplay();
+      } catch {
+        // mesin sudah mati
+      }
+    }
     send("account", account);
   }
 
@@ -395,7 +408,7 @@ export function startController(win: BrowserWindow) {
   });
 
   handle("item.set", (id: string, patch: Record<string, unknown>) => guard(() => needScenes().setItem(id, patch)));
-  handle("item.move", (id: string, dir: "up" | "down") => guard(() => needScenes().moveItem(id, dir)));
+  handle("item.move", (id: string, dir: "up" | "down" | "top" | "bottom") => guard(() => needScenes().moveItem(id, dir)));
   handle("item.remove", (id: string) => guard(() => needScenes().removeItem(id)));
   handle("item.select", (id: string | null) => {
     const s = scenes?.snapshot();
@@ -426,7 +439,27 @@ export function startController(win: BrowserWindow) {
     engine.attachDisplay(win.getNativeWindowHandle(), b);
     return engine.previewArea();
   });
-  handle("display.hide", () => engine.hideDisplay());
+  handle("display.hide", () => {
+    selection.hide();
+    engine.hideDisplay();
+  });
+  handle("overlay.draw", (frame: Frame | null) => selection.draw(frame));
+  /** Menu klik kanan native (di atas jendela pratinjau). Menjawab id entri yang dipilih, atau null. */
+  handle(
+    "menu.popup",
+    (entries: unknown) =>
+      new Promise<string | null>((resolve) => {
+        let done = false;
+        const finish = (id: string | null) => {
+          if (done) return;
+          done = true;
+          resolve(id);
+        };
+        const menu = Menu.buildFromTemplate(menuTemplate(entries, (id: string) => finish(id)));
+        // Klik bisa datang sesaat setelah menu tertutup — beri jeda sebelum menyatakan "tidak memilih".
+        menu.popup({ window: win, callback: () => setTimeout(() => finish(null), 100) });
+      }),
+  );
   handle("display.area", () => engine.previewArea());
   handle("canvas.get", () => (scenes ? CANVAS[scenes.orientation() as "landscape" | "portrait"] : CANVAS.landscape));
 

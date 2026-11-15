@@ -353,6 +353,10 @@ export class ObsEngine {
       osn.NodeObs.OBS_content_setPaddingColor(DISPLAY, 8, 7, 11);
       osn.NodeObs.OBS_content_setPaddingSize(DISPLAY, 0);
       osn.NodeObs.OBS_content_setShouldDrawUI(DISPLAY, true);
+      // Garis potong + garis bantu jarak ke tepi kanvas saat item terpilih. (setOutlineColor tidak diekspor
+      // obs-studio-node 0.27 — bingkai seleksi memakai warna bawaannya.)
+      osn.NodeObs.OBS_content_setCropOutlineColor(DISPLAY, 34, 197, 94, 255);
+      osn.NodeObs.OBS_content_setDrawGuideLines(DISPLAY, true);
       this.display = true;
     }
     this.moveDisplay(bounds);

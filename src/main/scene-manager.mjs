@@ -166,13 +166,14 @@ export function createSceneManager({ engine, load, save, newId }) {
       persist();
     },
 
-    /** "up" = ke lapisan atas, "down" = ke bawah. */
+    /** "up"/"down" = satu lapisan, "top"/"bottom" = paling atas/bawah. */
     moveItem(itemId, dir) {
       const { scene: sc } = findItem(itemId);
       const i = sc.items.findIndex((x) => x.id === itemId);
-      const j = dir === "up" ? i + 1 : i - 1;
-      if (j < 0 || j >= sc.items.length) return;
-      [sc.items[i], sc.items[j]] = [sc.items[j], sc.items[i]];
+      const j = dir === "top" ? sc.items.length - 1 : dir === "bottom" ? 0 : dir === "up" ? i + 1 : i - 1;
+      if (j < 0 || j >= sc.items.length || j === i) return;
+      const [moved] = sc.items.splice(i, 1);
+      sc.items.splice(j, 0, moved);
       engine.orderItems(sc.id, sc.items.map((x) => x.id));
       persist();
     },

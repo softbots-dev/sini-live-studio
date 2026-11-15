@@ -117,3 +117,18 @@ test("teardown: semua sumber & scene dilepas dari mesin (ganti akun di PC yang s
   assert.ok(engine.calls.some((c) => c[0] === "removeSource" && c[1] === sourceId));
   assert.ok(engine.calls.some((c) => c[0] === "removeScene" && c[1] === sceneId));
 });
+
+test("urutan lapisan: paling atas / paling bawah (menu klik kanan)", () => {
+  const { m, engine } = manager();
+  m.apply();
+  const a = m.addSource("text_gdiplus", "A", {}).itemId;
+  const b = m.addSource("text_gdiplus", "B", {}).itemId;
+  const c = m.addSource("text_gdiplus", "C", {}).itemId;
+  m.moveItem(a, "top");
+  assert.deepEqual(m.snapshot().scenes[0].items.map((i) => i.id), [b, c, a]);
+  m.moveItem(a, "bottom");
+  assert.deepEqual(m.snapshot().scenes[0].items.map((i) => i.id), [a, b, c]);
+  assert.deepEqual(engine.calls.filter((x) => x[0] === "orderItems").at(-1)[2], [a, b, c]);
+  m.moveItem(a, "bottom"); // sudah paling bawah → tidak berubah
+  assert.deepEqual(m.snapshot().scenes[0].items.map((i) => i.id), [a, b, c]);
+});
