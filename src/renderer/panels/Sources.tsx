@@ -4,6 +4,7 @@ import type { Collection, Scene, Source } from "../screens/Studio";
 import { useT } from "../i18n";
 import { sourceDialogStore, useSourceDialog, type Result } from "../store";
 import { openItemMenu } from "../item-menu";
+import { iconForKind } from "../kinds";
 import { Button, Dialog, Field, IconButton } from "../ui";
 
 export const KINDS = ["dshow_input", "monitor_capture", "window_capture", "game_capture", "wasapi_input_capture", "wasapi_output_capture", "image_source", "text_gdiplus"] as const;
@@ -20,10 +21,11 @@ const DEFAULTS: Record<string, Record<string, unknown>> = {
 
 export function SourcesPanel({ collection, scene, selected, onSelect }: { collection: Collection | null; scene: Scene | null; selected: string | null; onSelect: (id: string | null) => void }) {
   const { t } = useT();
-  const [adding, setAdding] = useState(false);
   const dialog = useSourceDialog();
   const editing = dialog?.type === "edit" ? dialog.sourceId : null;
   const filtering = dialog?.type === "filters" ? dialog.sourceId : null;
+  const adding = dialog?.type === "add";
+  const setAdding = (open: boolean) => sourceDialogStore.open(open ? { type: "add" } : null);
   const setEditing = (id: string | null) => sourceDialogStore.open(id ? { type: "edit", sourceId: id } : null);
   const setFiltering = (id: string | null) => sourceDialogStore.open(id ? { type: "filters", sourceId: id } : null);
   const [error, setError] = useState<string | null>(null);
@@ -62,20 +64,17 @@ export function SourcesPanel({ collection, scene, selected, onSelect }: { collec
   };
 
   return (
-    <section className="panel panel-grow" aria-labelledby="sources-title">
-      <header className="panel-head">
-        <h2 id="sources-title">{t("studio.app.sources")}</h2>
-        <IconButton label={t("studio.app.addSource")} icon={<Plus aria-hidden />} onClick={() => setAdding(true)} />
-      </header>
+    <div className="sources">
       {items.length === 0 ? (
         <p className="empty">{t("studio.app.emptySources")}</p>
       ) : (
-        <ul className="list" aria-labelledby="sources-title">
+        <ul className="list source-list" aria-label={t("studio.app.sources")}>
           {items.map((item) => {
             const src = source(item.sourceId);
             if (!src) return null;
+            const Icon = iconForKind(src.kind);
             return (
-              <li key={item.id} className={`list-row ${selected === item.id ? "is-active" : ""} ${item.visible ? "" : "is-muted"}`} onContextMenu={(e) => void showMenu(e, item)}>
+              <li key={item.id} className={`list-row source-row ${selected === item.id ? "is-active" : ""} ${item.visible ? "" : "is-muted"}`} onContextMenu={(e) => void showMenu(e, item)}>
                 <button
                   type="button"
                   className="list-main"
@@ -85,7 +84,8 @@ export function SourcesPanel({ collection, scene, selected, onSelect }: { collec
                     void window.studio.invoke("item.select", item.id);
                   }}
                 >
-                  {src.name}
+                  <Icon className="source-icon" aria-hidden />
+                  <span>{src.name}</span>
                 </button>
                 <IconButton label={item.visible ? t("studio.app.hide") : t("studio.app.show")} icon={item.visible ? <Eye aria-hidden /> : <EyeOff aria-hidden />} onClick={() => void run("item.set", item.id, { visible: !item.visible })} />
                 <IconButton label={item.locked ? t("studio.app.unlock") : t("studio.app.lock")} icon={item.locked ? <Lock aria-hidden /> : <LockOpen aria-hidden />} pressed={item.locked} onClick={() => void run("item.set", item.id, { locked: !item.locked })} />
@@ -94,28 +94,9 @@ export function SourcesPanel({ collection, scene, selected, onSelect }: { collec
           })}
         </ul>
       )}
-      {(() => {
-        const idx = items.findIndex((x) => x.id === selected);
-        const item = idx >= 0 ? items[idx] : null;
-        const src = item ? source(item.sourceId) : null;
-        if (!item || !src) return null;
-        return (
-          <div className="panel-tools" role="toolbar" aria-label={src.name}>
-            <IconButton label={t("studio.app.moveUp")} icon={<ArrowUp aria-hidden />} disabled={idx === 0} onClick={() => void run("item.move", item.id, "up")} />
-            <IconButton label={t("studio.app.moveDown")} icon={<ArrowDown aria-hidden />} disabled={idx === items.length - 1} onClick={() => void run("item.move", item.id, "down")} />
-            <IconButton label={t("studio.app.properties")} icon={<Settings2 aria-hidden />} onClick={() => setEditing(src.id)} />
-            <IconButton label={t("studio.app.filters")} icon={<SlidersHorizontal aria-hidden />} onClick={() => setFiltering(src.id)} />
-            <IconButton
-              label={t("studio.app.delete")}
-              icon={<Trash2 aria-hidden />}
-              onClick={() => {
-                onSelect(null);
-                void run("item.remove", item.id);
-              }}
-            />
-          </div>
-        );
-      })()}
+      <Button variant="secondary" className="add-source-wide" icon={<Plus aria-hidden />} onClick={() => setAdding(true)}>
+        {t("studio.app.addSource")}
+      </Button>
       {error && (
         <p className="msg-warn" role="alert">
           {error}
@@ -137,7 +118,7 @@ export function SourcesPanel({ collection, scene, selected, onSelect }: { collec
         <SourceDialog key={editing} source={source(editing)!} item={scene.items.find((i) => i.sourceId === editing) ?? null} onClose={() => setEditing(null)} />
       )}
       {filtering && source(filtering) && <FiltersDialog key={filtering} source={source(filtering)!} onClose={() => setFiltering(null)} />}
-    </section>
+    </div>
   );
 }
 

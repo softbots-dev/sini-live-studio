@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useT } from "../i18n";
 import { Button, Dialog, Field } from "../ui";
+import { LOCALE_NAMES } from "../brand";
 
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const { t } = useT();
-  const [data, setData] = useState<{ encoder: string | null; encoders: string[] } | null>(null);
+  const [data, setData] = useState<{ encoder: string | null; encoders: string[]; locale: string | null } | null>(null);
   const [version, setVersion] = useState("");
   useEffect(() => {
-    void window.studio.invoke<{ encoder: string | null; encoders: string[] }>("settings.get").then(setData);
+    void window.studio.invoke<{ encoder: string | null; encoders: string[]; locale: string | null }>("settings.get").then(setData);
     void window.studio.invoke<{ version: string }>("app.info").then((i) => setVersion(i.version));
   }, []);
   const h264 = (data?.encoders ?? []).filter((e) => /x264|nvenc_h264|jim_nvenc$|amf_h264|texture_amf|qsv11(_v2)?$/.test(e));
@@ -30,6 +31,27 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             {h264.map((e) => (
               <option key={e} value={e}>
                 {e}
+              </option>
+            ))}
+          </select>
+        )}
+      </Field>
+      <Field label={t("studio.app.language")}>
+        {(id) => (
+          <select
+            id={id}
+            className="input"
+            value={data?.locale ?? ""}
+            onChange={(e) => {
+              const v = e.target.value || null;
+              setData((d) => (d ? { ...d, locale: v } : d));
+              void window.studio.invoke("settings.setLocale", v);
+            }}
+          >
+            <option value="">{t("studio.app.languageSystem")}</option>
+            {LOCALE_NAMES.map(([code, name]) => (
+              <option key={code} value={code}>
+                {name}
               </option>
             ))}
           </select>

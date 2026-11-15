@@ -48,7 +48,7 @@ export type Result<T = unknown> = { ok: true; value: T } | { ok: false; code: st
   Dialog sumber (pengaturan / filter) yang dibuka dari daftar sumber ATAU dari menu klik kanan di pratinjau.
   Dirender oleh panel Sumber.
 */
-export type SourceDialog = { type: "edit" | "filters"; sourceId: string } | null;
+export type SourceDialog = { type: "edit" | "filters"; sourceId: string } | { type: "add" } | null;
 let sourceDialog: SourceDialog = null;
 const dialogListeners = new Set<() => void>();
 export const sourceDialogStore = {
