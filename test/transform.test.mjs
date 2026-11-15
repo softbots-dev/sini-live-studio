@@ -138,3 +138,62 @@ test("selectionFrame: tanpa garis untuk sisi yang menempel atau keluar kanvas", 
   const f = selectionFrame({ x: 0, y: -20, w: 1920, h: 1200 }, canvas, { x: 0, y: 0, width: 960, height: 540 });
   assert.deepEqual(f.guides, []);
 });
+
+// ── Putar, cermin, preset posisi (tampilan baru) ─────────────────────────────
+const { rotateItem, flipItem } = await import("../src/renderer/lib/transform.mjs");
+
+test("itemBox rotasi 90: lebar & tinggi kotak tertukar", () => {
+  assert.deepEqual(itemBox({ ...base, rotation: 90 }, size), { x: 100, y: 50, w: 250, h: 500 });
+  assert.deepEqual(itemBox({ ...base, rotation: 180 }, size), { x: 100, y: 50, w: 500, h: 250 });
+});
+
+test("rotateItem: +90 searah jarum jam, pusat kotak tetap", () => {
+  const p = rotateItem(base, size);
+  assert.equal(p.rotation, 90);
+  assert.equal(p.x, 225);
+  assert.equal(p.y, -75);
+  assert.equal(rotateItem({ ...base, rotation: 270 }, size).rotation, 0);
+});
+
+test("resize item berotasi 90: sisi kanan terlihat mengubah lebar terlihat (skala Y sumber)", () => {
+  const item = { ...base, rotation: 90 };
+  const p = resizeItem({ item, size, handle: "e", dx: 50, dy: 0, free: false });
+  const b = itemBox({ ...item, ...p }, size);
+  close(b.w, 300);
+  close(b.h, 500);
+  assert.equal(p.x, 100);
+  close(p.scaleX, 0.5);
+  close(p.scaleY, 0.6);
+});
+
+test("crop item berotasi 90: sisi atas terlihat = sisi kiri sumber; sisi bawah tetap", () => {
+  const item = { ...base, rotation: 90 };
+  const p = cropItem({ item, size, handle: "n", dy: 50, dx: 0 });
+  assert.deepEqual(p.crop, { left: 100, right: 0, top: 0, bottom: 0 });
+  const b = itemBox({ ...item, ...p }, size);
+  close(b.y + b.h, 50 + 500);
+  close(b.y, 100);
+});
+
+test("crop item bercermin horizontal: sisi kiri terlihat = sisi kanan sumber", () => {
+  const item = { ...base, flipH: true };
+  const p = cropItem({ item, size, handle: "w", dx: 50, dy: 0 });
+  assert.deepEqual(p.crop, { left: 0, right: 100, top: 0, bottom: 0 });
+  close(itemBox({ ...item, ...p }, size).x + itemBox({ ...item, ...p }, size).w, 600);
+});
+
+test("flipItem membalik bendera tanpa menggeser kotak", () => {
+  assert.deepEqual(flipItem(base, "h"), { flipH: true });
+  assert.deepEqual(flipItem({ ...base, flipV: true }, "v"), { flipV: false });
+});
+
+test("preset posisi: rata kiri/kanan/atas/bawah dan tengah satu sumbu", () => {
+  assert.deepEqual(presetTransform("left", base, size, canvas), { x: 0 });
+  assert.deepEqual(presetTransform("right", base, size, canvas), { x: 1920 - 500 });
+  assert.deepEqual(presetTransform("top", base, size, canvas), { y: 0 });
+  assert.deepEqual(presetTransform("bottom", base, size, canvas), { y: 1080 - 250 });
+  assert.deepEqual(presetTransform("centerH", base, size, canvas), { x: 710 });
+  assert.deepEqual(presetTransform("centerV", base, size, canvas), { y: 415 });
+  const rotated = presetTransform("fit", { ...base, rotation: 90 }, size, canvas);
+  close(rotated.scaleX, 1080 / 1000); // 90°: tinggi terlihat = lebar sumber
+});

@@ -2,19 +2,56 @@
   Geometri item di pratinjau, dalam koordinat KANVAS (bukan piksel layar). Perilaku meniru OBS:
   - 8 pegangan (nw n ne e se s sw w): sudut menjaga rasio (free = Shift → dua sumbu bebas), sisi meregangkan
     satu sumbu; sisi/sudut seberang tetap di tempat.
-  - Potong (Alt + seret pegangan): memotong sisi itu dalam piksel sumber; isi yang tersisa tidak bergeser.
-  - Preset menu klik kanan: pas ke layar, regangkan ke layar, tengahkan, atur ulang.
+  - Potong (Alt + seret pegangan, atau mode potong): memotong sisi itu dalam piksel sumber; isi yang tersisa
+    tidak bergeser.
+  - Putar (kelipatan 90°, searah jarum jam) & cermin: model menyimpan KOTAK TERLIHAT (x, y = kiri atas);
+    pada 90/270 lebar & tinggi kotak tertukar. Pegangan selalu bekerja pada sisi yang TERLIHAT — dipetakan
+    ke sisi sumber lewat SIDE_OF.
+  - Preset: pas/regangkan/tengahkan/atur ulang + rata kiri/kanan/atas/bawah, tengah satu sumbu.
   Murni — diuji test/transform.test.mjs.
 */
 
 const ZERO = { left: 0, right: 0, top: 0, bottom: 0 };
 const cropOf = (item) => ({ ...ZERO, ...(item.crop ?? {}) });
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const rotOf = (item) => {
+  const r = (((Math.round((item.rotation ?? 0) / 90) * 90) % 360) + 360) % 360;
+  return r;
+};
+const swapped = (item) => rotOf(item) === 90 || rotOf(item) === 270;
 
 /** Ukuran sumber yang tersisa setelah dipotong (piksel sumber, minimal 1). */
 function visible(item, size) {
   const c = cropOf(item);
   return { cw: Math.max(1, size.width - c.left - c.right), ch: Math.max(1, size.height - c.top - c.bottom) };
+}
+/** Ukuran kotak terlihat tanpa skala (piksel sumber, setelah putar). */
+function seen(item, size) {
+  const { cw, ch } = visible(item, size);
+  return swapped(item) ? { vw: ch, vh: cw } : { vw: cw, vh: ch };
+}
+/** Skala sumber dari ukuran kotak terlihat w×h. */
+function scalesFor(item, size, w, h) {
+  const { cw, ch } = visible(item, size);
+  return swapped(item) ? { scaleX: h / cw, scaleY: w / ch } : { scaleX: w / cw, scaleY: h / ch };
+}
+
+/*
+  Sisi terlihat (n/e/s/w) → sisi sumber (sebelum cermin), per rotasi searah jarum jam. Contoh 90°: sisi
+  KIRI sumber berputar ke atas, jadi pegangan atas terlihat memotong sisi kiri sumber.
+*/
+const SIDE_OF = {
+  0: { n: "top", e: "right", s: "bottom", w: "left" },
+  90: { n: "left", e: "top", s: "right", w: "bottom" },
+  180: { n: "bottom", e: "left", s: "top", w: "right" },
+  270: { n: "right", e: "bottom", s: "left", w: "top" },
+};
+const MIRROR = { left: "right", right: "left", top: "bottom", bottom: "top" };
+function sourceSide(item, visibleSide) {
+  let side = SIDE_OF[rotOf(item)][visibleSide];
+  if (item.flipH && (side === "left" || side === "right")) side = MIRROR[side];
+  if (item.flipV && (side === "top" || side === "bottom")) side = MIRROR[side];
+  return side;
 }
 
 export const CURSORS = {
@@ -31,12 +68,9 @@ export const CURSORS = {
 
 export function itemBox(item, size) {
   const c = cropOf(item);
-  return {
-    x: item.x,
-    y: item.y,
-    w: Math.max(0, size.width - c.left - c.right) * item.scaleX,
-    h: Math.max(0, size.height - c.top - c.bottom) * item.scaleY,
-  };
+  const sw = Math.max(0, size.width - c.left - c.right) * item.scaleX;
+  const sh = Math.max(0, size.height - c.top - c.bottom) * item.scaleY;
+  return swapped(item) ? { x: item.x, y: item.y, w: sh, h: sw } : { x: item.x, y: item.y, w: sw, h: sh };
 }
 
 /** Pegangan di bawah titik (toleransi `tol` satuan kanvas), "body", atau null. */
@@ -60,7 +94,6 @@ export function hitTest(b, pt, tol) {
 }
 
 export function resizeItem({ item, size, handle, dx, dy, free }) {
-  const { cw, ch } = visible(item, size);
   const b = itemBox(item, size);
   const hasW = handle.includes("w");
   const hasE = handle.includes("e");
@@ -81,45 +114,71 @@ export function resizeItem({ item, size, handle, dx, dy, free }) {
   return {
     x: hasW ? b.x + b.w - w : b.x,
     y: hasN ? b.y + b.h - h : b.y,
-    scaleX: w / cw,
-    scaleY: h / ch,
+    ...scalesFor(item, size, w, h),
   };
 }
 
 export function cropItem({ item, size, handle, dx, dy }) {
   const c = cropOf(item);
-  const sx = dx / item.scaleX;
-  const sy = dy / item.scaleY;
   const next = { ...c };
   let { x, y } = item;
-  if (handle.includes("w")) {
-    next.left = Math.round(clamp(c.left + sx, 0, size.width - c.right - 1));
-    x = item.x + (next.left - c.left) * item.scaleX;
-  } else if (handle.includes("e")) {
-    next.right = Math.round(clamp(c.right - sx, 0, size.width - c.left - 1));
-  }
-  if (handle.includes("n")) {
-    next.top = Math.round(clamp(c.top + sy, 0, size.height - c.bottom - 1));
-    y = item.y + (next.top - c.top) * item.scaleY;
-  } else if (handle.includes("s")) {
-    next.bottom = Math.round(clamp(c.bottom - sy, 0, size.height - c.top - 1));
-  }
+  const apply = (visibleSide, inward) => {
+    const side = sourceSide(item, visibleSide);
+    const horizontal = side === "left" || side === "right";
+    const scale = horizontal ? item.scaleX : item.scaleY;
+    const total = horizontal ? size.width : size.height;
+    const other = { left: "right", right: "left", top: "bottom", bottom: "top" }[side];
+    next[side] = Math.round(clamp(c[side] + inward / scale, 0, total - c[other] - 1));
+    return (next[side] - c[side]) * scale; // pergeseran sisi terlihat (satuan kanvas)
+  };
+  if (handle.includes("w")) x = item.x + apply("w", dx);
+  else if (handle.includes("e")) apply("e", -dx);
+  if (handle.includes("n")) y = item.y + apply("n", dy);
+  else if (handle.includes("s")) apply("s", -dy);
   return { x, y, crop: next };
 }
 
-/** Patch item untuk preset menu klik kanan. "center" tidak mengubah skala. */
+/** Patch item untuk preset. "center" & rata tidak mengubah skala. */
 export function presetTransform(preset, item, size, canvas) {
-  const { cw, ch } = visible(item, size);
-  if (preset === "fit") {
-    const s = Math.min(canvas.width / cw, canvas.height / ch);
-    return { x: Math.round((canvas.width - cw * s) / 2), y: Math.round((canvas.height - ch * s) / 2), scaleX: s, scaleY: s };
+  const { vw, vh } = seen(item, size);
+  const b = itemBox(item, size);
+  switch (preset) {
+    case "fit": {
+      const s = Math.min(canvas.width / vw, canvas.height / vh);
+      return { x: Math.round((canvas.width - vw * s) / 2), y: Math.round((canvas.height - vh * s) / 2), scaleX: s, scaleY: s };
+    }
+    case "stretch":
+      return { x: 0, y: 0, ...scalesFor(item, size, canvas.width, canvas.height) };
+    case "center":
+      return { x: Math.round((canvas.width - b.w) / 2), y: Math.round((canvas.height - b.h) / 2) };
+    case "centerH":
+      return { x: Math.round((canvas.width - b.w) / 2) };
+    case "centerV":
+      return { y: Math.round((canvas.height - b.h) / 2) };
+    case "left":
+      return { x: 0 };
+    case "right":
+      return { x: Math.round(canvas.width - b.w) };
+    case "top":
+      return { y: 0 };
+    case "bottom":
+      return { y: Math.round(canvas.height - b.h) };
+    default:
+      return { x: 0, y: 0, scaleX: 1, scaleY: 1, crop: { ...ZERO } };
   }
-  if (preset === "stretch") return { x: 0, y: 0, scaleX: canvas.width / cw, scaleY: canvas.height / ch };
-  if (preset === "center") {
-    const b = itemBox(item, size);
-    return { x: Math.round((canvas.width - b.w) / 2), y: Math.round((canvas.height - b.h) / 2) };
-  }
-  return { x: 0, y: 0, scaleX: 1, scaleY: 1, crop: { ...ZERO } };
+}
+
+/** Putar +90° searah jarum jam; pusat kotak terlihat tetap. */
+export function rotateItem(item, size) {
+  const b = itemBox(item, size);
+  const cx = b.x + b.w / 2;
+  const cy = b.y + b.h / 2;
+  return { rotation: (rotOf(item) + 90) % 360, x: cx - b.h / 2, y: cy - b.w / 2 };
+}
+
+/** Cermin horizontal ("h") / vertikal ("v"); kotak tidak bergeser. */
+export function flipItem(item, axis) {
+  return axis === "h" ? { flipH: !item.flipH } : { flipV: !item.flipV };
 }
 
 /**
