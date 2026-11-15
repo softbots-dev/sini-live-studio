@@ -14,7 +14,7 @@ export function createAlertQueue({ now, setTimer, clearTimer, onShow, onUpdate, 
   let gapTimer = null;
   let seen = new Set();
 
-  const keyOf = (a) => (a.sample ? `\u0000sample|${a.id}` : `${a.sender.anonymous ? "\u0000anon" : a.sender.name}|${a.giftId}`);
+  const keyOf = (a) => (a.sample ? `\u0000sample|${a.id}` : `${a.sender.anonymous ? "\u0000anon" : a.senderId || a.sender.name}|${a.giftId}`);
 
   function remember(id) {
     seen.add(id);
@@ -69,7 +69,7 @@ export function createAlertQueue({ now, setTimer, clearTimer, onShow, onUpdate, 
     showNext();
   }
 
-  const toAlert = (g, extra = {}) => ({ id: g.messageId, sender: g.sender, giftId: g.giftId, name: g.name, icon: g.icon, quantity: g.quantity, coinValue: g.coinValue, soundUrl: g.soundUrl ?? null, silent: g.silent === true, ...extra });
+  const toAlert = (g, extra = {}) => ({ id: g.messageId, sender: g.sender, senderId: g.senderId ?? "", giftId: g.giftId, name: g.name, icon: g.icon, quantity: g.quantity, coinValue: g.coinValue, soundUrl: g.soundUrl ?? null, silent: g.silent === true, ...extra });
 
   return {
     push(gift, { durationMs, minCoins }) {

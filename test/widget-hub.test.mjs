@@ -191,9 +191,11 @@ test("hub: ranking dipotong ke baris widget; penghitung & hitung mundur; uji han
   const { c, h, sub } = hub();
   h.setWidgets([W.rank, W.counter, W.cd, W.alert, { ...W.alert, id: "w-alert2" }]);
   const rank = sub("w-rank");
-  h.setRanking([1, 2, 3, 4, 5].map((n) => ({ id: `u${n}`, username: `u${n}`, displayName: `U${n}`, avatarUrl: "/v1/media/x.png", diamonds: 100 - n })));
+  // Bentuk asli GET /v1/channels/<slug>/supporters (analytics.service.ts topSupporters).
+  h.setRanking([1, 2, 3, 4, 5].map((n) => ({ user: { id: `u${n}`, username: `u${n}`, displayName: `U${n}`, avatarUrl: n === 2 ? "" : "/v1/media/x.png", isVerified: false }, diamonds: 100 - n, giftCount: 1, rank: n })));
   assert.deepEqual(rank.at(-1)[1].rows[0], { name: "U1", avatarUrl: "https://sini.test/v1/media/x.png", coins: 99 });
   assert.equal(rank.at(-1)[1].rows.length, 3);
+  assert.deepEqual(rank.at(-1)[1].rows[1], { name: "U2", avatarUrl: null, coins: 98 });
   const count = sub("w-count");
   h.counterChanged("w-count", 5);
   assert.deepEqual(count.at(-1), ["counter", { value: 5 }]);
@@ -210,4 +212,15 @@ test("hub: ranking dipotong ke baris widget; penghitung & hitung mundur; uji han
   h.reset();
   assert.deepEqual(rank.at(-1), ["ranking", { rows: [] }]);
   assert.equal(h.countdownState("w-cd").running, false);
+});
+
+test("alert kombo per AKUN, bukan per nama tampilan: dua \"Budi\" berbeda tidak digabung", () => {
+  const { h, sub } = hub();
+  h.setWidgets([W.alert]);
+  const alert = sub("w-alert");
+  const g = (id, userId) => ({ type: "chat.message", data: { id, type: "gift", user: { id: userId, username: `budi_${userId}`, displayName: "Budi", color: "#fff" }, body: "", gift: { id: "rose", name: "Mawar", icon: "x", quantity: 1, coinValue: 10, senderAvatarUrl: null } } });
+  h.onRealtime(g("a", "u1"));
+  h.onRealtime(g("b", "u2"));
+  h.onRealtime(g("c", "u1"));
+  assert.deepEqual(alert.filter((e) => e[0] === "alert.update").map((e) => e[1]), [{ id: "a", quantity: 2 }]);
 });

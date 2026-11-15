@@ -36,7 +36,9 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
     if (!perf?.session) return 0;
     return Math.max(0, Number(perf[GOAL_FIELD[w.settings.goal]] ?? 0) || 0);
   };
-  const rankingRows = (w) => ranking.slice(0, w.settings.rows).map((r) => ({ name: r.displayName || r.username || "", avatarUrl: r.avatarUrl ? absUrl(r.avatarUrl) : null, coins: Math.max(0, Number(r.diamonds) || 0) }));
+  // Baris GET /v1/channels/<slug>/supporters: { user: { displayName, username, avatarUrl }, diamonds (= koin gift) }.
+  const rankingRows = (w) =>
+    ranking.slice(0, w.settings.rows).map((r) => ({ name: r.user?.displayName || r.user?.username || "", avatarUrl: r.user?.avatarUrl ? absUrl(r.user.avatarUrl) : null, coins: Math.max(0, Number(r.diamonds) || 0) }));
   const chatLines = (w) => {
     const shown = w.settings.showEvents ? lines : lines.filter((l) => l.kind === "text");
     return shown.slice(-w.settings.rows).map(({ userId, ...line }) => line);
@@ -103,6 +105,7 @@ export function createWidgetHub({ now, setTimer, clearTimer, absUrl, soundFor })
     return {
       messageId: data.id,
       sender: { name: anonymous ? "" : data.user?.displayName || data.user?.username || "", avatarUrl: !anonymous && g.senderAvatarUrl ? absUrl(g.senderAvatarUrl) : null, anonymous },
+      senderId: anonymous ? "" : String(data.user?.id ?? ""),
       giftId: g.id ?? "",
       name: g.name ?? "",
       icon: g.icon ? absUrl(g.icon) : null,

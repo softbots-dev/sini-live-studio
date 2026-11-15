@@ -28,10 +28,10 @@ export function WidgetFields({ source, settings, onCommit }: { source: Source; s
         <>
           <div className="row">
             <Field label={t("studio.app.widget.duration")}>
-              {(id) => <input id={id} className="input" type="number" min={3} max={15} value={Number(settings.durationSec ?? 5)} onChange={(e) => onCommit({ durationSec: clamp(e.target.value, 3, 15, 5) })} />}
+              {(id) => <NumberField id={id} min={3} max={15} value={Number(settings.durationSec ?? 5)} onCommit={(v) => onCommit({ durationSec: v })} />}
             </Field>
             <Field label={t("studio.app.widget.minCoins")}>
-              {(id) => <input id={id} className="input" type="number" min={1} value={Number(settings.minCoins ?? 1)} onChange={(e) => onCommit({ minCoins: clamp(e.target.value, 1, 1e9, 1) })} />}
+              {(id) => <NumberField id={id} min={1} max={1e9} value={Number(settings.minCoins ?? 1)} onCommit={(v) => onCommit({ minCoins: v })} />}
             </Field>
           </div>
           <label className="check">
@@ -57,7 +57,7 @@ export function WidgetFields({ source, settings, onCommit }: { source: Source; s
               )}
             </Field>
             <Field label={t("studio.app.widget.target")}>
-              {(id) => <input id={id} className="input" type="number" min={1} value={Number(settings.target ?? 100)} onChange={(e) => onCommit({ target: clamp(e.target.value, 1, 1e12, 100) })} />}
+              {(id) => <NumberField id={id} min={1} max={1e12} value={Number(settings.target ?? 100)} onCommit={(v) => onCommit({ target: v })} />}
             </Field>
           </div>
           <p className="hint">{t("studio.app.widget.goalHint")}</p>
@@ -70,7 +70,7 @@ export function WidgetFields({ source, settings, onCommit }: { source: Source; s
 
       {type === "ranking" && (
         <Field label={t("studio.app.widget.rows")}>
-          {(id) => <input id={id} className="input" type="number" min={3} max={10} value={Number(settings.rows ?? 5)} onChange={(e) => onCommit({ rows: clamp(e.target.value, 3, 10, 5) })} />}
+          {(id) => <NumberField id={id} min={3} max={10} value={Number(settings.rows ?? 5)} onCommit={(v) => onCommit({ rows: v })} />}
         </Field>
       )}
 
@@ -89,7 +89,7 @@ export function WidgetFields({ source, settings, onCommit }: { source: Source; s
               )}
             </Field>
             <Field label={t("studio.app.widget.rows")}>
-              {(id) => <input id={id} className="input" type="number" min={3} max={15} value={Number(settings.rows ?? 8)} onChange={(e) => onCommit({ rows: clamp(e.target.value, 3, 15, 8) })} />}
+              {(id) => <NumberField id={id} min={3} max={15} value={Number(settings.rows ?? 8)} onCommit={(v) => onCommit({ rows: v })} />}
             </Field>
           </div>
           <label className="check">
@@ -108,6 +108,37 @@ export function WidgetFields({ source, settings, onCommit }: { source: Source; s
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * Angka disimpan (dan dijepit ke batasnya) saat isian ditinggalkan / Enter — bukan tiap ketukan, supaya
+ * mengetik "12" tidak dijepit dulu di "1". Tombol panah naik/turun tetap langsung tersimpan.
+ */
+function NumberField({ id, value, min, max, onCommit }: { id: string; value: number; min: number; max: number; onCommit: (v: number) => void }) {
+  const [draft, setDraft] = useState(String(value));
+  useEffect(() => setDraft(String(value)), [value]);
+  const commit = (raw: string) => {
+    const v = clamp(raw, min, max, value);
+    setDraft(String(v));
+    if (v !== value) onCommit(v);
+  };
+  return (
+    <input
+      id={id}
+      className="input"
+      type="number"
+      min={min}
+      max={max}
+      value={draft}
+      onChange={(e) => {
+        setDraft(e.target.value);
+        // Panah naik/turun (bukan ketikan) langsung tersimpan.
+        if (!(e.nativeEvent as InputEvent).inputType) commit(e.target.value);
+      }}
+      onBlur={(e) => commit(e.target.value)}
+      onKeyDown={(e) => e.key === "Enter" && commit((e.target as HTMLInputElement).value)}
+    />
   );
 }
 
@@ -164,9 +195,9 @@ function CountdownFields({ sourceId, durationSec, onCommit }: { sourceId: string
   return (
     <>
       <div className="row">
-        <Field label={t("studio.app.widget.hours")}>{(id) => <input id={id} className="input" type="number" min={0} max={24} value={h} onChange={(e) => commit(clamp(e.target.value, 0, 24, 0), m, s)} />}</Field>
-        <Field label={t("studio.app.widget.minutes")}>{(id) => <input id={id} className="input" type="number" min={0} max={59} value={m} onChange={(e) => commit(h, clamp(e.target.value, 0, 59, 0), s)} />}</Field>
-        <Field label={t("studio.app.widget.seconds")}>{(id) => <input id={id} className="input" type="number" min={0} max={59} value={s} onChange={(e) => commit(h, m, clamp(e.target.value, 0, 59, 0))} />}</Field>
+        <Field label={t("studio.app.widget.hours")}>{(id) => <NumberField id={id} min={0} max={24} value={h} onCommit={(v) => commit(v, m, s)} />}</Field>
+        <Field label={t("studio.app.widget.minutes")}>{(id) => <NumberField id={id} min={0} max={59} value={m} onCommit={(v) => commit(h, v, s)} />}</Field>
+        <Field label={t("studio.app.widget.seconds")}>{(id) => <NumberField id={id} min={0} max={59} value={s} onCommit={(v) => commit(h, m, v)} />}</Field>
       </div>
       <div className="widget-controls">
         <Button variant="primary" icon={running ? <Pause aria-hidden /> : <Play aria-hidden />} onClick={() => void run("toggle")}>
