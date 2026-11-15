@@ -8,6 +8,7 @@ import { TitleBar } from "../TitleBar";
 import { SceneBar } from "../panels/Scenes";
 import { SourcesPanel } from "../panels/Sources";
 import { PreviewPanel } from "../panels/Preview";
+import { PreviewToolbar } from "../panels/PreviewToolbar";
 import { MixerPanel } from "../panels/Mixer";
 import { StatusBar, type BroadcastState } from "../panels/StatusBar";
 import { SettingsDialog } from "../panels/Settings";
@@ -49,6 +50,7 @@ export function StudioScreen({ user }: { user: User }) {
   const [categories, setCategories] = useState<{ slug: string; name: string }[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [titleOpen, setTitleOpen] = useState(false);
+  const [cropMode, setCropMode] = useState(false);
   const [signOutError, setSignOutError] = useState(false);
   const [askQuit, setAskQuit] = useState(false);
   useEffect(() => window.studio.on("quit.ask", () => setAskQuit(true)), []);
@@ -131,7 +133,8 @@ export function StudioScreen({ user }: { user: User }) {
       </aside>
 
       <section className="center">
-        <PreviewPanel collection={collection} scene={activeScene} selected={selected} onSelect={setSelected} />
+        <PreviewToolbar collection={collection} scene={activeScene} selected={selected} cropMode={cropMode} onCropMode={setCropMode} onDeselect={() => setSelected(null)} />
+        <PreviewPanel collection={collection} scene={activeScene} selected={selected} onSelect={setSelected} cropMode={cropMode} />
         <MixerPanel collection={collection} scene={activeScene} />
         <StatusBar broadcast={broadcast} title={title} category={category} />
       </section>

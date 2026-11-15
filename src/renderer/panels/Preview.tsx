@@ -16,9 +16,9 @@ const GRAB_PX = 8;
   Pratinjau: libobs menggambar kanvas di jendela native tepat di atas elemen ini. Mouse ditangani di
   elemen ini (jendela native tidak menelan klik), dipetakan ke koordinat kanvas. Seperti OBS:
   seret badan = pindah; 8 pegangan item terpilih = ubah ukuran (sudut menjaga rasio, Shift = bebas;
-  sisi = satu sumbu); Alt + pegangan = potong; klik kanan = menu item. Garis seleksi digambar libobs.
+  sisi = satu sumbu); Alt + pegangan (atau mode potong di toolbar) = potong; klik kanan = menu item. Bingkai seleksi digambar lapisan transparan (src/main/overlay.ts).
 */
-export function PreviewPanel({ collection, scene, selected, onSelect }: { collection: Collection | null; scene: Scene | null; selected: string | null; onSelect: (id: string | null) => void }) {
+export function PreviewPanel({ collection, scene, selected, onSelect, cropMode = false }: { collection: Collection | null; scene: Scene | null; selected: string | null; onSelect: (id: string | null) => void; cropMode?: boolean }) {
   const { t } = useT();
   const ref = useRef<HTMLDivElement>(null);
   const [area, setArea] = useState<Area | null>(null);
@@ -143,7 +143,7 @@ export function PreviewPanel({ collection, scene, selected, onSelect }: { collec
     const size = sizes[found.item.id];
     if (!size) return;
     const handle = found.hit === "body" ? null : found.hit;
-    drag.current = { itemId: found.item.id, mode: handle ? (e.altKey ? "crop" : "resize") : "move", handle, startX: pt.x, startY: pt.y, item: found.item, size };
+    drag.current = { itemId: found.item.id, mode: handle ? (e.altKey || cropMode ? "crop" : "resize") : "move", handle, startX: pt.x, startY: pt.y, item: found.item, size };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 

@@ -209,3 +209,15 @@ input[type="range"] { accent-color: var(--brand); }
 .welcome-legal { position: absolute; left: 0; right: 0; bottom: 1.25rem; text-align: center; font-size: var(--text-2xs); color: var(--fg-subtle); }
 .welcome-legal p { margin: 0.125rem 0; }
 .welcome-legal .link-inline { color: var(--fg-muted); }
+
+/* ── Toolbar pratinjau ────────────────────────────────────────────────── */
+.ptool-row { height: 2.75rem; flex-shrink: 0; display: flex; justify-content: center; align-items: center; }
+.ptool { display: flex; align-items: center; gap: 0.125rem; padding: 0.25rem; background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 0.625rem; box-shadow: 0 6px 20px rgb(0 0 0 / 0.35); }
+.ptool-btn { position: relative; display: inline-grid; place-items: center; width: 2.125rem; height: 1.875rem; border: 0; border-radius: 0.4375rem; background: transparent; color: #d9d5e6; cursor: pointer; }
+.ptool-btn.has-dd { width: 2.625rem; padding-right: 0.5rem; }
+.ptool-btn svg { width: 1rem; height: 1rem; }
+.ptool-btn .dd { position: absolute; right: 0.25rem; width: 0.625rem; height: 0.625rem; color: var(--fg-muted); }
+.ptool-btn:hover:not(:disabled) { background: var(--surface-3); color: var(--fg); }
+.ptool-btn[aria-pressed="true"] { background: rgb(236 72 153 / 0.18); color: var(--accent); }
+.ptool-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.ptool-sep { width: 1px; height: 1.125rem; background: var(--line-strong); margin: 0 0.25rem; }
