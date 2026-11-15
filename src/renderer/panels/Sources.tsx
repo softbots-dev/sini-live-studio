@@ -4,20 +4,13 @@ import type { Collection, Scene, Source } from "../screens/Studio";
 import { useT } from "../i18n";
 import { sourceDialogStore, useSourceDialog, type Result } from "../store";
 import { openItemMenu } from "../item-menu";
-import { iconForKind } from "../kinds";
+import { iconForKind, SOURCE_DEFAULTS } from "../kinds";
 import { Button, Dialog, Field, IconButton } from "../ui";
 
 export const KINDS = ["dshow_input", "monitor_capture", "window_capture", "game_capture", "wasapi_input_capture", "wasapi_output_capture", "image_source", "text_gdiplus"] as const;
 const FILTERS = ["color_filter", "crop_filter", "chroma_key_filter", "noise_suppress_filter", "noise_gate_filter", "gain_filter", "compressor_filter"] as const;
 const AUDIO_ONLY = new Set(["wasapi_input_capture", "wasapi_output_capture"]);
 
-/** Pengaturan awal per jenis sumber (pengguna memilih perangkat/jendela di dialog setelahnya). */
-const DEFAULTS: Record<string, Record<string, unknown>> = {
-  wasapi_input_capture: { device_id: "default" },
-  wasapi_output_capture: { device_id: "default" },
-  game_capture: { capture_mode: "any_fullscreen" },
-  text_gdiplus: { text: "Sini", font: { face: "Arial", size: 96, style: "Regular", flags: 0 }, color: 0xffffffff },
-};
 
 export function SourcesPanel({ collection, scene, selected, onSelect }: { collection: Collection | null; scene: Scene | null; selected: string | null; onSelect: (id: string | null) => void }) {
   const { t } = useT();
@@ -54,7 +47,7 @@ export function SourcesPanel({ collection, scene, selected, onSelect }: { collec
 
   const add = async (kind: string) => {
     setAdding(false);
-    const r = await run("source.add", kind, t(`studio.app.kind.${kind}`), DEFAULTS[kind] ?? {});
+    const r = await run("source.add", kind, t(`studio.app.kind.${kind}`), SOURCE_DEFAULTS[kind] ?? {});
     if (r.ok) {
       const { sourceId, itemId } = r.value as { sourceId: string; itemId: string };
       onSelect(itemId);

@@ -9,8 +9,7 @@ import { SceneBar } from "../panels/Scenes";
 import { SourcesPanel } from "../panels/Sources";
 import { PreviewPanel } from "../panels/Preview";
 import { PreviewToolbar } from "../panels/PreviewToolbar";
-import { MixerPanel } from "../panels/Mixer";
-import { StatusBar, type BroadcastState } from "../panels/StatusBar";
+import { ControlBar, type BroadcastState } from "../panels/ControlBar";
 import { SettingsDialog } from "../panels/Settings";
 import { ChatPanel } from "../panels/Chat";
 import { TitleDialog } from "../panels/TitleDialog";
@@ -135,8 +134,7 @@ export function StudioScreen({ user }: { user: User }) {
       <section className="center">
         <PreviewToolbar collection={collection} scene={activeScene} selected={selected} cropMode={cropMode} onCropMode={setCropMode} onDeselect={() => setSelected(null)} />
         <PreviewPanel collection={collection} scene={activeScene} selected={selected} onSelect={setSelected} cropMode={cropMode} />
-        <MixerPanel collection={collection} scene={activeScene} />
-        <StatusBar broadcast={broadcast} title={title} category={category} />
+        <ControlBar broadcast={broadcast} title={title} category={category} collection={collection} scene={activeScene} />
       </section>
 
       <aside className="right">

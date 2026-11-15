@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Ban, Clock, Gem, Send, Trash2, Users } from "lucide-react";
-import type { BroadcastState } from "./StatusBar";
+import type { BroadcastState } from "./ControlBar";
 import { useT } from "../i18n";
 import { useMainState } from "../store";
 import { Button, Dialog, IconButton } from "../ui";

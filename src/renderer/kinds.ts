@@ -27,3 +27,11 @@ export function iconForKind(kind: string): LucideIcon {
 }
 
 export const AUDIO_KINDS = new Set(["wasapi_input_capture", "wasapi_output_capture"]);
+
+/** Pengaturan awal per jenis sumber (pengguna memilih perangkat/jendela/berkas di dialog setelahnya). */
+export const SOURCE_DEFAULTS: Record<string, Record<string, unknown>> = {
+  wasapi_input_capture: { device_id: "default" },
+  wasapi_output_capture: { device_id: "default" },
+  game_capture: { capture_mode: "any_fullscreen" },
+  text_gdiplus: { text: "Sini", font: { face: "Arial", size: 96, style: "Regular", flags: 0 }, color: 0xffffffff },
+};

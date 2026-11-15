@@ -4,12 +4,12 @@ import { useT } from "../i18n";
 import { useMainState } from "../store";
 import { IconButton } from "../ui";
 
-const AUDIO = new Set(["wasapi_input_capture", "wasapi_output_capture", "dshow_input"]);
+const AUDIO = new Set(["wasapi_input_capture", "wasapi_output_capture", "dshow_input", "ffmpeg_source", "browser_source"]);
 
 /** Peak dBFS (−60…0) → persen meter. */
-const meter = (db: number | undefined) => (typeof db === "number" && Number.isFinite(db) ? Math.max(0, Math.min(100, ((db + 60) / 60) * 100)) : 0);
+export const meter = (db: number | undefined) => (typeof db === "number" && Number.isFinite(db) ? Math.max(0, Math.min(100, ((db + 60) / 60) * 100)) : 0);
 
-export function MixerPanel({ collection, scene }: { collection: Collection | null; scene: Scene | null }) {
+export function MixerPanel({ collection, scene, embedded = false }: { collection: Collection | null; scene: Scene | null; embedded?: boolean }) {
   const { t } = useT();
   const levels = useMainState<Record<string, number[]>>("volmeter", null, {});
   if (!collection || !scene) return null;
@@ -17,10 +17,12 @@ export function MixerPanel({ collection, scene }: { collection: Collection | nul
   const sources = collection.sources.filter((s) => AUDIO.has(s.kind) && used.has(s.id));
 
   return (
-    <section className="panel mixer" aria-labelledby="mixer-title">
-      <header className="panel-head">
-        <h2 id="mixer-title">{t("studio.app.mixer")}</h2>
-      </header>
+    <section className={embedded ? "mixer-embedded" : "panel mixer"} aria-label={t("studio.app.mixer")}>
+      {!embedded && (
+        <header className="panel-head">
+          <h2>{t("studio.app.mixer")}</h2>
+        </header>
+      )}
       {sources.length === 0 ? (
         <p className="empty">{t("studio.app.noAudio")}</p>
       ) : (
