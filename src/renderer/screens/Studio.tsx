@@ -14,6 +14,7 @@ import { SettingsDialog } from "../panels/Settings";
 import { ChatPanel } from "../panels/Chat";
 import { PerformancePanel } from "../panels/Performance";
 import { TitleDialog } from "../panels/TitleDialog";
+import { CampaignsCard } from "../panels/Campaigns";
 
 export type Item = {
   id: string;
@@ -130,6 +131,7 @@ export function StudioScreen({ user }: { user: User }) {
           {collection && <SceneBar collection={collection} />}
           <SourcesPanel collection={collection} scene={activeScene} selected={selected} onSelect={setSelected} />
         </section>
+        <CampaignsCard />
       </aside>
 
       <section className="center">
