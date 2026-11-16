@@ -84,3 +84,11 @@ test("cookie jar memanggil onChange saat isinya berubah", () => {
   jar.clear();
   assert.deepEqual(seen, [{ a: "1" }, {}]);
 });
+
+test("put mengirim metode PUT dengan badan JSON", async () => {
+  const seen = [];
+  const http = createHttp({ origin: "https://sini.live", version: "1", jar: createCookieJar(), fetch: async (url, init) => (seen.push({ url, init }), res(200, { ok: true, data: [] })) });
+  await http.put("/me/channel/interact/wishes", { items: [] });
+  assert.equal(seen[0].init.method, "PUT");
+  assert.equal(seen[0].init.body, JSON.stringify({ items: [] }));
+});

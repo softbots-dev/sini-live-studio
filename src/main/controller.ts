@@ -12,6 +12,7 @@ import { createCookieJar, createHttp, StudioHttpError } from "./http.mjs";
 import { runLink, siteLocale } from "./link.mjs";
 import { liveMaintenance } from "./maintenance.mjs";
 import { createPerfPoller } from "./perf.mjs";
+import { createInteract, wishGifts } from "./interact.mjs";
 import { menuTemplate } from "./menu.mjs";
 import { createSelectionOverlay, type Frame } from "./overlay.js";
 import { CANVAS, createSceneManager, validateSourceSettings } from "./scene-manager.mjs";
@@ -32,7 +33,7 @@ type User = { id: string; username: string; displayName: string; avatarUrl: stri
 type Account = { status: "loading" | "signedOut" | "signedIn"; user: User | null };
 
 /** Halaman web yang boleh dibuka studio di browser (selain halaman sambungan). */
-const EXTERNAL_PATHS = new Set(["/become-streamer/", "/dashboard/", "/dashboard/monetization/", "/settings/?tab=security", "/studio/", "/p/terms-of-service/", "/p/privacy-policy/"]);
+const EXTERNAL_PATHS = new Set(["/wallet/", "/become-streamer/", "/dashboard/", "/dashboard/monetization/", "/settings/?tab=security", "/studio/", "/p/terms-of-service/", "/p/privacy-policy/"]);
 /** Bahasa yang bisa dipilih di studio (sama dengan bahasa situs). */
 const LOCALES = ["id", "en", "de", "es", "fil", "fr", "hi", "it", "ja", "ko", "ms", "nl", "pl", "pt-br", "ru", "th", "tr", "vi", "zh-cn", "zh-tw"];
 
@@ -85,6 +86,14 @@ export function startController(win: BrowserWindow) {
         throw err;
       }
     },
+    async put(path: string, body?: unknown) {
+      try {
+        return await rawHttp.put(path, body);
+      } catch (err) {
+        onHttpError(err);
+        throw err;
+      }
+    },
     async del(path: string) {
       try {
         return await rawHttp.del(path);
@@ -94,6 +103,9 @@ export function startController(win: BrowserWindow) {
       }
     },
   };
+
+  // ── Alat interaktif live (docs/live-interact.md): Goal, Poll, Wishes, Treasure Box ──────────
+  const interact = createInteract({ http, onState: (s: unknown) => send("interact", s) });
 
   // ── Widget di layar siaran (docs/live-studio.md § Widget) ────────────────────
   const absUrl = (u: string) => (typeof u === "string" && u.startsWith("/") ? `${origin.replace(/\/+$/, "")}${u}` : u);
@@ -145,7 +157,12 @@ export function startController(win: BrowserWindow) {
       }
     },
     onEvent: (msg: { type: string; data: any }) => {
-      if (msg.type === "room.state") chatStatus = "connected";
+      if (msg.type === "room.state") {
+        chatStatus = "connected";
+        // Setiap masuk room (juga setelah tersambung ulang): keadaan alat terbaru.
+        void interact.refresh();
+      }
+      interact.apply(msg);
       if (msg.type === "socket.closed") chatStatus = "connecting";
       if (msg.type === "chat.rejected") send("chat.rejected", { code: msg.data?.code ?? null });
       if (msg.type === "stats.changed") perf.refresh();
@@ -185,6 +202,8 @@ export function startController(win: BrowserWindow) {
     realtime.disconnect();
     chat.reset();
     widgetHub.reset();
+    interact.reset();
+    send("interact", null);
     pushChat();
   }
 
@@ -425,6 +444,22 @@ export function startController(win: BrowserWindow) {
     if (slug && /^[a-z0-9-]{1,80}$/.test(slug)) void shell.openExternal(`${origin}/${siteLang()}/channel/${slug}/`);
   });
   handle("perf.get", () => perfValue);
+
+  handle("interact.get", async () => interact.state() ?? (roomSlug ? await interact.refresh() : null));
+  handle("interact.goal.start", (input: unknown) => interact.startGoal(input));
+  handle("interact.goal.end", () => interact.endGoal());
+  handle("interact.poll.start", (input: unknown) => interact.startPoll(input));
+  handle("interact.poll.close", () => interact.closePoll());
+  handle("interact.wishes.set", (items: unknown) => interact.setWishes(Array.isArray(items) ? items : []));
+  handle("interact.treasure.start", (input: unknown, key: string) => interact.startTreasure(input, String(key ?? "")));
+  handle("interact.wallet", () => interact.wallet());
+  handle("interact.gifts", async () => {
+    try {
+      return wishGifts((await http.get("/catalog")).data?.gifts);
+    } catch {
+      return [];
+    }
+  });
 
   handle("catalog.categories", async () => {
     try {

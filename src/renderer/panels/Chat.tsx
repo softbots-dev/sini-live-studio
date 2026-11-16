@@ -4,6 +4,7 @@ import type { BroadcastState } from "./ControlBar";
 import { useT } from "../i18n";
 import { useMainState } from "../store";
 import { Button, Dialog, IconButton } from "../ui";
+import { ToolsPanel } from "./Tools";
 
 type ChatMessage = {
   id: string;
@@ -23,7 +24,7 @@ type ChatState = { status: "idle" | "connecting" | "connected"; messages: ChatMe
 export function ChatPanel({ broadcast }: { broadcast: BroadcastState }) {
   const { t, locale } = useT();
   const chat = useMainState<ChatState>("chat", "chat.get", { status: "idle", messages: [], gifts: [], giftCoins: 0, giftCount: 0, viewers: 0, peakViewers: 0 });
-  const [tab, setTab] = useState<"chat" | "gifts">("chat");
+  const [tab, setTab] = useState<"chat" | "gifts" | "tools">("chat");
   const [text, setText] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [banning, setBanning] = useState<ChatMessage | null>(null);
@@ -79,10 +80,15 @@ export function ChatPanel({ broadcast }: { broadcast: BroadcastState }) {
           <button type="button" role="tab" id="tab-gifts" aria-controls="panel-gifts" aria-selected={tab === "gifts"} onClick={() => setTab("gifts")}>
             {t("studio.app.chat.giftsTab")}
           </button>
+          <button type="button" role="tab" id="tab-tools" aria-controls="panel-tools" aria-selected={tab === "tools"} onClick={() => setTab("tools")}>
+            {t("studio.app.tools.tab")}
+          </button>
         </div>
       </header>
 
-      {tab === "chat" ? (
+      {tab === "tools" ? (
+        <ToolsPanel broadcast={broadcast} />
+      ) : tab === "chat" ? (
         <div id="panel-chat" role="tabpanel" aria-labelledby="tab-chat" className="chat-body">
           <div ref={listRef} className="chat-list" aria-live="polite">
             {chat.status !== "connected" && broadcast.channel ? <p className="empty">{t("studio.app.chat.connecting")}</p> : null}
