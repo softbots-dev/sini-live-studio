@@ -438,6 +438,12 @@ export function startController(win: BrowserWindow) {
   };
 
   handle("app.locale", () => rawLocale());
+  // Konfirmasi tindakan tanpa urungkan (renderer/confirm.ts). Teksnya dari renderer (sudah diterjemahkan).
+  handle("app.confirm", async (opts: { message?: string; detail?: string; confirm?: string; cancel?: string }) => {
+    const text = (v: unknown, max: number) => String(v ?? "").slice(0, max);
+    const r = await dialog.showMessageBox(win, { type: "warning", message: text(opts?.message, 300), detail: text(opts?.detail, 300), buttons: [text(opts?.cancel, 40), text(opts?.confirm, 40)], defaultId: 0, cancelId: 0, noLink: true });
+    return r.response === 1;
+  });
   handle("app.info", () => ({ version: app.getVersion(), origin, locale: siteLang() }));
   handle("settings.setLocale", (code: string | null) => {
     if (code !== null && !LOCALES.includes(code)) return;

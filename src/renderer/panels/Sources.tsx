@@ -9,6 +9,7 @@ import { WidgetFields } from "./WidgetFields";
 import { AddSourceDialog } from "./AddSourceDialog";
 import { Button, Dialog, Field, IconButton } from "../ui";
 import { sourceCrop, visibleCrop } from "../lib/transform.mjs";
+import { confirmAction } from "../confirm";
 
 const FILTERS = ["color_filter", "crop_filter", "chroma_key_filter", "noise_suppress_filter", "noise_gate_filter", "gain_filter", "compressor_filter"] as const;
 const AUDIO_ONLY = new Set(["wasapi_input_capture", "wasapi_output_capture"]);
@@ -186,7 +187,7 @@ function SourceDialog({ source, item, onClose }: { source: Source; item: Scene["
         <Field label={propLabel}>
           {(id) =>
             options.length === 0 ? (
-              <p id={id} className="hint">
+              <p className="hint">
                 {t("studio.app.prop.noOptions")}
               </p>
             ) : (
@@ -296,7 +297,7 @@ function FiltersDialog({ source, onClose }: { source: Source; onClose: () => voi
         <div key={`${f.kind}-${i}`} className="filter-card">
           <div className="filter-head">
             <strong>{t(`studio.app.filter.${f.kind}`)}</strong>
-            <IconButton label={t("studio.app.removeFilter")} icon={<Trash2 aria-hidden />} onClick={() => commit(filters.filter((_, j) => j !== i))} />
+            <IconButton label={t("studio.app.removeFilter")} icon={<Trash2 aria-hidden />} onClick={() => void confirmAction(t, t("studio.app.confirm.removeFilter", { name: t(`studio.app.filter.${f.kind}`) })).then((ok) => ok && commit(filters.filter((_, j) => j !== i)))} />
           </div>
           {f.kind === "color_filter" && (
             <>

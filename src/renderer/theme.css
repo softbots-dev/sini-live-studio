@@ -27,6 +27,14 @@
   --fg-muted: #a3a3c2;
   --fg-subtle: oklch(0.625 0.034 287);
   --fg-onbrand: #ffffff;
+  /* Nilai sekali pakai yang dulu tertulis langsung di studio.css. */
+  --titlebar-bg: #0b0a10;
+  --fg-soft: #d9d5e6;
+  --fg-hero: #c9c4d8;
+  --art-a: #2b2147;
+  --art-b: #160f27;
+  --art-line: #3d355a;
+  --accent-glow: rgb(236 72 153 / 0.25);
   --line: #201e2e;
   --line-strong: #2e2b40;
   --line-input: oklch(0.53 0.03 290);
@@ -87,7 +95,7 @@ h3 {
   color: var(--fg-muted);
 }
 :focus-visible {
-  outline: 2px solid var(--brand-ring);
+  outline: 2px solid var(--brand-ink);
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {

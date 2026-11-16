@@ -4,6 +4,7 @@ import type { Collection } from "../screens/Studio";
 import { useT } from "../i18n";
 import type { Result } from "../store";
 import { Button, Dialog, Field, IconButton } from "../ui";
+import { confirmAction } from "../confirm";
 
 /** Nama scene untuk tampilan (scene tanpa nama = "Scene N"). */
 export function sceneLabel(t: (k: string, p?: Record<string, string | number>) => string, name: string, i: number) {
@@ -41,6 +42,7 @@ export function SceneBar({ collection }: { collection: Collection }) {
     ]);
     if (picked === "rename" && active) setRenaming({ id: active.id, name });
     if (picked === "delete" && active) {
+      if (!(await confirmAction(t, t("studio.app.confirm.deleteScene", { name })))) return;
       const r = await window.studio.invoke<Result>("scene.remove", active.id);
       setError(r.ok ? null : r.code === "last_scene" ? t("studio.app.lastScene") : null);
     }

@@ -2,6 +2,7 @@ import type { Item, Scene, Source } from "./screens/Studio";
 import { flipItem, presetTransform, rotateItem, type Preset, type Size } from "./lib/transform.mjs";
 import { sourceDialogStore } from "./store";
 import { AUDIO_KINDS, WIDGET_KIND } from "./kinds";
+import { confirmAction } from "./confirm";
 
 type T = (key: string, vars?: Record<string, string | number>) => string;
 export type ItemContext = { item: Item; scene: Scene; source: Source; size: Size | null; canvas: Size };
@@ -21,7 +22,7 @@ export const isVisual = (ctx: { source: Source; size: Size | null }) => !AUDIO_K
  * Satu aksi item — dipakai menu klik kanan DAN toolbar pratinjau supaya keduanya selalu sama.
  * Menjawab true kalau item dihapus (pemanggil melepas pilihannya).
  */
-export async function runItemAction(id: string, ctx: ItemContext): Promise<boolean> {
+export async function runItemAction(id: string, ctx: ItemContext & { t: T }): Promise<boolean> {
   const { item, source, size, canvas } = ctx;
   if (["top", "up", "down", "bottom"].includes(id)) await window.studio.invoke("item.move", item.id, id);
   else if (id.startsWith("t:") && size) await window.studio.invoke("item.set", item.id, presetTransform(id.slice(2) as Preset, item, size, canvas));
@@ -35,6 +36,8 @@ export async function runItemAction(id: string, ctx: ItemContext): Promise<boole
   else if (id === "w:toggle") await window.studio.invoke("widget.countdown", source.id, "toggle");
   else if (id === "w:creset") await window.studio.invoke("widget.countdown", source.id, "reset");
   else if (id === "delete") {
+    // Tanpa urungkan, dan bisa saat siaran: tanya dulu (kotak dialog Windows dari proses utama).
+    if (!(await confirmAction(ctx.t, ctx.t("studio.app.confirm.deleteSource", { name: source.name })))) return false;
     await window.studio.invoke("item.remove", item.id);
     return true;
   }
@@ -96,5 +99,5 @@ export async function openItemMenu({ t, ...ctx }: { t: T } & ItemContext): Promi
     { id: "delete", label: t("studio.app.delete") },
   ];
   const id = await window.studio.invoke<string | null>("menu.popup", entries);
-  return id ? runItemAction(id, ctx) : false;
+  return id ? runItemAction(id, { ...ctx, t }) : false;
 }

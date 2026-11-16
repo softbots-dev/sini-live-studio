@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useT } from "../i18n";
 import { Button, Dialog, Field } from "../ui";
 import { KIND_META, SOURCE_DEFAULTS, UI_KINDS, type UiKind } from "../kinds";
@@ -22,7 +22,21 @@ export function AddSourceDialog({ onClose, onAdded }: { onClose: () => void; onA
   const meta = KIND_META[pick];
   const Icon = meta.icon;
 
+  // Klik ganda / Enter beruntun tidak boleh menambah sumber dua kali: kunci sejak awal (ref — state belum
+  // berubah di antara dua event klik yang berdekatan), termasuk selama dialog pilih berkas terbuka.
+  const adding = useRef(false);
   const add = async () => {
+    if (adding.current) return;
+    adding.current = true;
+    setBusy(true);
+    try {
+      await addOnce();
+    } finally {
+      adding.current = false;
+      setBusy(false);
+    }
+  };
+  const addOnce = async () => {
     setError(null);
     let settings: Record<string, unknown> = { ...(SOURCE_DEFAULTS[meta.kind] ?? {}) };
     if (pick === "video") {
@@ -35,9 +49,7 @@ export function AddSourceDialog({ onClose, onAdded }: { onClose: () => void; onA
       const canvas = await window.studio.invoke<{ width: number; height: number }>("canvas.get");
       settings = { ...settings, url: url.trim(), width: canvas.width, height: canvas.height, reroute_audio: true };
     }
-    setBusy(true);
     const r = await window.studio.invoke<Result<{ sourceId: string; itemId: string }>>("source.add", meta.kind, t(`studio.app.ui.${pick}`), settings);
-    setBusy(false);
     if (r.ok) onAdded(r.value, pick);
     else setError(r.code === "scene_full" ? t("studio.app.sceneFull") : ERRORS.has(r.code) ? t(`studio.app.err.${r.code}`) : t("studio.app.chat.actionFailed"));
   };

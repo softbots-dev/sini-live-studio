@@ -18,16 +18,6 @@ export function PerformancePanel({ broadcast }: { broadcast: BroadcastState }) {
   const duration = useDuration(broadcast.phase === "live" ? broadcast.liveSince : null);
   const nf = new Intl.NumberFormat(locale);
 
-  const Metric = ({ icon, value, label }: { icon: ReactNode; value: number; label: string }) => (
-    <div className="metric">
-      <span className="metric-icon" aria-hidden>
-        {icon}
-      </span>
-      <span className="metric-value tabular">{nf.format(value)}</span>
-      <span className="metric-label">{label}</span>
-    </div>
-  );
-
   return (
     <section className="card perf" aria-labelledby="perf-title">
       <div className="perf-head">
@@ -38,16 +28,28 @@ export function PerformancePanel({ broadcast }: { broadcast: BroadcastState }) {
       </div>
       {live && perf.session ? (
         <div className="perf-grid">
-          <Metric icon={<Eye />} value={chat.viewers} label={t("studio.app.perf.viewers")} />
-          <Metric icon={<Gem />} value={perf.diamonds} label={t("studio.app.perf.diamonds")} />
-          <Metric icon={<Gift />} value={perf.gifts} label={t("studio.app.perf.gifts")} />
-          <Metric icon={<UserPlus />} value={perf.newFollowers} label={t("studio.app.perf.followers")} />
-          <Metric icon={<UserRoundCheck />} value={perf.newMembers} label={t("studio.app.perf.members")} />
-          <Metric icon={<MessageSquareText />} value={perf.chatters} label={t("studio.app.perf.chatters")} />
+          <Metric nf={nf} icon={<Eye />} value={chat.viewers} label={t("studio.app.perf.viewers")} />
+          <Metric nf={nf} icon={<Gem />} value={perf.diamonds} label={t("studio.app.perf.diamonds")} />
+          <Metric nf={nf} icon={<Gift />} value={perf.gifts} label={t("studio.app.perf.gifts")} />
+          <Metric nf={nf} icon={<UserPlus />} value={perf.newFollowers} label={t("studio.app.perf.followers")} />
+          <Metric nf={nf} icon={<UserRoundCheck />} value={perf.newMembers} label={t("studio.app.perf.members")} />
+          <Metric nf={nf} icon={<MessageSquareText />} value={perf.chatters} label={t("studio.app.perf.chatters")} />
         </div>
       ) : (
         <p className="perf-empty">{t(live && perf.session === null && perf.failed ? "studio.app.perf.failed" : "studio.app.perf.empty")}</p>
       )}
     </section>
+  );
+}
+
+function Metric({ icon, value, label, nf }: { icon: ReactNode; value: number; label: string; nf: Intl.NumberFormat }) {
+  return (
+    <div className="metric">
+      <span className="metric-icon" aria-hidden>
+        {icon}
+      </span>
+      <span className="metric-value tabular">{nf.format(value)}</span>
+      <span className="metric-label">{label}</span>
+    </div>
   );
 }

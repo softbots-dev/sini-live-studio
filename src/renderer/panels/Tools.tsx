@@ -4,6 +4,7 @@ import type { BroadcastState } from "./ControlBar";
 import { useT } from "../i18n";
 import { useMainState } from "../store";
 import { Button, Dialog, Field, IconButton } from "../ui";
+import { confirmAction } from "../confirm";
 
 /*
   Tab "Alat" — Goal, Poll, Wishes, Treasure Box untuk penonton (docs/live-interact.md). Keadaan dari
@@ -67,6 +68,19 @@ export function ToolsPanel({ broadcast }: { broadcast: BroadcastState }) {
     return r.ok;
   };
 
+  // Akhiri alat saat siaran: tanya dulu, lalu tombolnya terkunci sampai jawaban datang (klik ganda tidak dikirim dua kali).
+  const [ending, setEnding] = useState<string | null>(null);
+  const end = async (kind: "goal" | "poll" | "wishes", channel: string, ...args: unknown[]) => {
+    if (ending) return;
+    if (!(await confirmAction(t, t(`studio.app.confirm.end.${kind}`), t("studio.app.tools.end")))) return;
+    setEnding(kind);
+    try {
+      await run(channel, ...args);
+    } finally {
+      setEnding(null);
+    }
+  };
+
   const openDialog = (kind: "goal" | "poll" | "wishes" | "treasure") => {
     setDialogError(null);
     setDialog(kind);
@@ -91,12 +105,6 @@ export function ToolsPanel({ broadcast }: { broadcast: BroadcastState }) {
   };
   const dialogProps = { onClose: closeDialog, error: dialogError, busy };
 
-  const StartButton = ({ kind }: { kind: "goal" | "poll" | "wishes" | "treasure" }) => (
-    <Button size="sm" variant="primary" disabled={!live} title={live ? undefined : t("studio.app.tools.needLive")} onClick={() => openDialog(kind)}>
-      {t("studio.app.tools.start")}
-    </Button>
-  );
-
   const goal = state?.goal ?? null;
   const poll = state?.poll && !(state.poll.closed && now - Date.parse(state.poll.closedAt ?? state.poll.endsAt) > 30_000) ? state.poll : null;
   // Peti yang selesai tetap tampil 30 dtk (sama dengan web & Android), lalu kartunya kembali kosong.
@@ -119,11 +127,11 @@ export function ToolsPanel({ broadcast }: { broadcast: BroadcastState }) {
           <Target aria-hidden />
           <h3>{t("studio.app.tools.goal.title")}</h3>
           {goal ? (
-            <Button size="sm" variant="secondary" onClick={() => void run("interact.goal.end")}>
+            <Button size="sm" variant="secondary" disabled={ending === "goal"} onClick={() => void end("goal", "interact.goal.end")}>
               {t("studio.app.tools.end")}
             </Button>
           ) : (
-            <StartButton kind="goal" />
+            <StartButton live={live} onStart={() => openDialog("goal")} />
           )}
         </header>
         {goal ? (
@@ -142,11 +150,11 @@ export function ToolsPanel({ broadcast }: { broadcast: BroadcastState }) {
           <ChartBar aria-hidden />
           <h3>{t("studio.app.tools.poll.title")}</h3>
           {poll && !poll.closed ? (
-            <Button size="sm" variant="secondary" onClick={() => void run("interact.poll.close")}>
+            <Button size="sm" variant="secondary" disabled={ending === "poll"} onClick={() => void end("poll", "interact.poll.close")}>
               {t("studio.app.tools.end")}
             </Button>
           ) : (
-            <StartButton kind="poll" />
+            <StartButton live={live} onStart={() => openDialog("poll")} />
           )}
         </header>
         {poll ? (
@@ -172,11 +180,11 @@ export function ToolsPanel({ broadcast }: { broadcast: BroadcastState }) {
           <Gift aria-hidden />
           <h3>{t("studio.app.tools.wishes.title")}</h3>
           {state?.wishes.length ? (
-            <Button size="sm" variant="secondary" onClick={() => void run("interact.wishes.set", [])}>
+            <Button size="sm" variant="secondary" disabled={ending === "wishes"} onClick={() => void end("wishes", "interact.wishes.set", [])}>
               {t("studio.app.tools.end")}
             </Button>
           ) : (
-            <StartButton kind="wishes" />
+            <StartButton live={live} onStart={() => openDialog("wishes")} />
           )}
         </header>
         {state?.wishes.length ? (
@@ -197,7 +205,7 @@ export function ToolsPanel({ broadcast }: { broadcast: BroadcastState }) {
         <header className="tool-head">
           <PackageOpen aria-hidden />
           <h3>{t("studio.app.tools.treasure.title")}</h3>
-          {!boxOpen && <StartButton kind="treasure" />}
+          {!boxOpen && <StartButton live={live} onStart={() => openDialog("treasure")} />}
         </header>
         {box ? (
           <>
@@ -428,5 +436,15 @@ function TreasureDialog({ onClose, onSubmit, error, busy }: DialogBase & { onSub
       )}
       <DialogError error={error} />
     </Dialog>
+  );
+}
+
+/** Tombol Mulai alat — di tingkat modul supaya tidak dipasang ulang tiap detik (jam alat) dan fokusnya tidak hilang. */
+function StartButton({ live, onStart }: { live: boolean; onStart: () => void }) {
+  const { t } = useT();
+  return (
+    <Button size="sm" variant="primary" disabled={!live} title={live ? undefined : t("studio.app.tools.needLive")} onClick={onStart}>
+      {t("studio.app.tools.start")}
+    </Button>
   );
 }

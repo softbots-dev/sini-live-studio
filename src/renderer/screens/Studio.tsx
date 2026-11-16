@@ -57,6 +57,12 @@ export function StudioScreen({ user }: { user: User }) {
   const [signOutError, setSignOutError] = useState(false);
   const [askQuit, setAskQuit] = useState(false);
   useEffect(() => window.studio.on("quit.ask", () => setAskQuit(true)), []);
+  // Pesan gagal keluar terlihat beberapa detik (sebelumnya hanya untuk pembaca layar).
+  useEffect(() => {
+    if (!signOutError) return;
+    const id = setTimeout(() => setSignOutError(false), 6000);
+    return () => clearTimeout(id);
+  }, [signOutError]);
   const live = ACTIVE_PHASES.has(broadcast.phase);
 
   useEffect(() => {
@@ -110,7 +116,11 @@ export function StudioScreen({ user }: { user: User }) {
               <span className="account-name">{user.displayName}</span>
               <ChevronDown aria-hidden />
             </button>
-            {signOutError && <span className="sr-only" role="alert">{t("studio.app.signOutLive")}</span>}
+            {signOutError && (
+              <span className="titlebar-error" role="alert">
+                {t("studio.app.signOutFailed")}
+              </span>
+            )}
           </>
         }
       />
@@ -122,9 +132,9 @@ export function StudioScreen({ user }: { user: User }) {
           </h2>
           <div className="seg" role="radiogroup" aria-labelledby="studio-view-title" title={live ? t("studio.app.orientationLocked") : undefined}>
             {(["portrait", "landscape"] as const).map((o) => (
-              <button key={o} type="button" role="radio" aria-checked={collection?.orientation === o} disabled={live || !collection} onClick={() => void window.studio.invoke("orientation.set", o)}>
+              <button key={o} type="button" role="radio" aria-checked={collection?.orientation === o} disabled={live || !collection} title={t(`studio.app.${o}`)} onClick={() => void window.studio.invoke("orientation.set", o)}>
                 {o === "portrait" ? <RectangleVertical aria-hidden /> : <RectangleHorizontal aria-hidden />}
-                {t(`studio.app.${o}`)}
+                <span className="ellipsis">{t(`studio.app.${o}`)}</span>
               </button>
             ))}
           </div>
