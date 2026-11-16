@@ -12,10 +12,10 @@ const INVOKE = new Set([
   "item.set", "item.move", "item.remove", "item.select", "item.sizes",
   "audio.volume", "audio.mute", "audio.monitor", "filters.set",
   "display.bounds", "display.hide", "display.area", "menu.popup", "overlay.draw", "canvas.get", "settings.get", "settings.setEncoder",
-  "chat.get", "chat.send", "chat.delete", "chat.ban", "interact.get", "interact.goal.start", "interact.goal.end", "interact.poll.start", "interact.poll.close", "interact.wishes.set", "interact.treasure.start", "interact.wallet", "interact.gifts", "quit.confirm", "quit.cancel",
+  "chat.get", "chat.send", "chat.delete", "chat.ban", "interact.get", "interact.goal.start", "interact.goal.end", "interact.poll.start", "interact.poll.close", "interact.wishes.set", "interact.treasure.start", "interact.wallet", "interact.gifts", "campaigns.get", "campaign.open", "campaign.dismiss", "quit.confirm", "quit.cancel",
   "widget.test", "widget.counter", "widget.countdown", "widget.countdownState", "widget.available",
 ]);
-const EVENTS = new Set(["account", "engine", "link.code", "broadcast", "stats", "volmeter", "scenes", "chat", "chat.rejected", "quit.ask", "perf", "locale", "widget.countdown", "interact"]);
+const EVENTS = new Set(["account", "engine", "link.code", "broadcast", "stats", "volmeter", "scenes", "chat", "chat.rejected", "quit.ask", "perf", "locale", "widget.countdown", "interact", "campaigns"]);
 
 const studio = {
   invoke: (channel: string, ...args: unknown[]): Promise<any> => {

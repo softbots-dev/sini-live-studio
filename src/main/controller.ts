@@ -13,6 +13,7 @@ import { runLink, siteLocale } from "./link.mjs";
 import { liveMaintenance } from "./maintenance.mjs";
 import { createPerfPoller } from "./perf.mjs";
 import { createInteract, wishGifts } from "./interact.mjs";
+import { createCampaigns, downloadImage } from "./campaigns.mjs";
 import { menuTemplate } from "./menu.mjs";
 import { createSelectionOverlay, type Frame } from "./overlay.js";
 import { CANVAS, createSceneManager, validateSourceSettings } from "./scene-manager.mjs";
@@ -106,6 +107,21 @@ export function startController(win: BrowserWindow) {
 
   // ── Alat interaktif live (docs/live-interact.md): Goal, Poll, Wishes, Treasure Box ──────────
   const interact = createInteract({ http, onState: (s: unknown) => send("interact", s) });
+
+  // ── Campaign dari panel admin (docs/live-studio.md § Campaign) ──────────────────────────────
+  const dismissedCampaigns = () => {
+    const ids = readSettings().dismissedCampaigns;
+    return Array.isArray(ids) ? ids.filter((x): x is string => typeof x === "string") : [];
+  };
+  const campaigns = createCampaigns({
+    http,
+    fetchImage: (url: string) => downloadImage(url),
+    getLocale: () => siteLang(),
+    getDismissed: dismissedCampaigns,
+    setDismissed: (ids: string[]) => writeFileSync(settingsFile(), JSON.stringify({ ...readSettings(), dismissedCampaigns: ids })),
+    onState: (s: unknown) => send("campaigns", s),
+    openExternal: (u: string) => void shell.openExternal(u),
+  });
 
   // ── Widget di layar siaran (docs/live-studio.md § Widget) ────────────────────
   const absUrl = (u: string) => (typeof u === "string" && u.startsWith("/") ? `${origin.replace(/\/+$/, "")}${u}` : u);
@@ -222,6 +238,8 @@ export function startController(win: BrowserWindow) {
     // Pratinjau adalah jendela native di atas halaman: tanpa ini ia tetap menutupi layar masuk sebagai
     // kotak hitam setelah keluar.
     if (next.status !== "signedIn") selection.hide();
+    if (next.status === "signedIn") void campaigns.start();
+    else campaigns.stop();
     if (next.status !== "signedIn" && engineReady) {
       try {
         engine.hideDisplay();
@@ -251,9 +269,9 @@ export function startController(win: BrowserWindow) {
   });
 
   const settingsFile = () => join(app.getPath("userData"), "settings.json");
-  function readSettings(): { encoder?: string; locale?: string } {
+  function readSettings(): { encoder?: string; locale?: string; dismissedCampaigns?: unknown } {
     try {
-      return JSON.parse(readFileSync(settingsFile(), "utf8")) as { encoder?: string; locale?: string };
+      return JSON.parse(readFileSync(settingsFile(), "utf8")) as { encoder?: string; locale?: string; dismissedCampaigns?: unknown };
     } catch {
       return {};
     }
@@ -401,6 +419,7 @@ export function startController(win: BrowserWindow) {
     writeFileSync(settingsFile(), JSON.stringify(next));
     send("locale", rawLocale());
     widgetHub.setLocale(rawLocale());
+    if (account.status === "signedIn") void campaigns.refresh();
   });
   handle("account.get", () => account);
   handle("engine.get", () => ({ ready: engineReady, error: engineError }));
@@ -446,6 +465,9 @@ export function startController(win: BrowserWindow) {
   handle("perf.get", () => perfValue);
 
   // Tab Alat dibuka: keadaan terbaru dari server (status live bisa berubah tanpa event alat).
+  handle("campaigns.get", () => campaigns.state());
+  handle("campaign.open", (id: unknown) => campaigns.open(String(id ?? "")));
+  handle("campaign.dismiss", (id: unknown) => campaigns.dismiss(String(id ?? "")));
   handle("interact.get", async () => (roomSlug ? await interact.refresh() : interact.state()));
   handle("interact.goal.start", (input: unknown) => interact.startGoal(input));
   handle("interact.goal.end", () => interact.endGoal());
