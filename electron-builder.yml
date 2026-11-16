@@ -24,6 +24,11 @@ nsis:
   createDesktopShortcut: true
   artifactName: Sini-Live-Studio-Setup.${ext}
   license: LICENSE
+  # Tampilan Sini (proyek 5): gambar & warna, halaman Sambutan — build/installer.nsh.
+  include: build/installer.nsh
+  installerSidebar: build/installerSidebar.bmp
+  uninstallerSidebar: build/uninstallerSidebar.bmp
+  installerHeader: build/installerHeader.bmp
 publish:
   provider: github
   owner: softbots-dev
