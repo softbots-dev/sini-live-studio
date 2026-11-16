@@ -5,6 +5,11 @@ import { useT } from "../i18n";
 import { useMainState } from "../store";
 import { Button, Dialog, IconButton } from "../ui";
 import { ToolsPanel } from "./Tools";
+import { ViewersPanel } from "./Viewers";
+
+/** Sama dengan ACTIVE_PHASES di screens/Studio.tsx (tidak diimpor: Studio mengimpor panel ini). */
+const LIVE_PHASES = new Set(["starting", "connecting", "live", "reconnecting"]);
+type Person = { username: string; displayName: string };
 
 type ChatMessage = {
   id: string;
@@ -24,10 +29,10 @@ type ChatState = { status: "idle" | "connecting" | "connected"; messages: ChatMe
 export function ChatPanel({ broadcast }: { broadcast: BroadcastState }) {
   const { t, locale } = useT();
   const chat = useMainState<ChatState>("chat", "chat.get", { status: "idle", messages: [], gifts: [], giftCoins: 0, giftCount: 0, viewers: 0, peakViewers: 0 });
-  const [tab, setTab] = useState<"chat" | "gifts" | "tools">("chat");
+  const [tab, setTab] = useState<"chat" | "gifts" | "tools" | "viewers">("chat");
   const [text, setText] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
-  const [banning, setBanning] = useState<ChatMessage | null>(null);
+  const [banning, setBanning] = useState<Person | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const nf = new Intl.NumberFormat(locale);
 
@@ -83,10 +88,27 @@ export function ChatPanel({ broadcast }: { broadcast: BroadcastState }) {
           <button type="button" role="tab" id="tab-tools" aria-controls="panel-tools" aria-selected={tab === "tools"} onClick={() => setTab("tools")}>
             {t("studio.app.tools.tab")}
           </button>
+          <button type="button" role="tab" id="tab-viewers" aria-controls="panel-viewers" aria-selected={tab === "viewers"} onClick={() => setTab("viewers")}>
+            {t("studio.app.viewers.tab")}
+          </button>
         </div>
       </header>
 
-      {tab === "tools" ? (
+      {tab === "viewers" ? (
+        <>
+          <ViewersPanel
+            live={LIVE_PHASES.has(broadcast.phase)}
+            connected={chat.status === "connected"}
+            onTimeout={(v) => void act("chat.ban", v.username, "timeout")}
+            onBan={(v) => setBanning(v)}
+          />
+          {notice && (
+            <p className="msg-warn chat-notice" role="alert">
+              {notice}
+            </p>
+          )}
+        </>
+      ) : tab === "tools" ? (
         <ToolsPanel broadcast={broadcast} />
       ) : tab === "chat" ? (
         <div id="panel-chat" role="tabpanel" aria-labelledby="tab-chat" className="chat-body">
@@ -100,7 +122,7 @@ export function ChatPanel({ broadcast }: { broadcast: BroadcastState }) {
                   <div className="chat-actions">
                     <IconButton label={t("studio.app.chat.delete", { name: m.user.displayName })} icon={<Trash2 aria-hidden />} onClick={() => void act("chat.delete", m.id)} />
                     <IconButton label={t("studio.app.chat.timeout", { name: m.user.displayName })} icon={<Clock aria-hidden />} onClick={() => void act("chat.ban", m.user.username, "timeout")} />
-                    <IconButton label={t("studio.app.chat.ban", { name: m.user.displayName })} icon={<Ban aria-hidden />} onClick={() => setBanning(m)} />
+                    <IconButton label={t("studio.app.chat.ban", { name: m.user.displayName })} icon={<Ban aria-hidden />} onClick={() => setBanning(m.user)} />
                   </div>
                 )}
               </div>
@@ -145,7 +167,7 @@ export function ChatPanel({ broadcast }: { broadcast: BroadcastState }) {
 
       {banning && (
         <Dialog
-          title={t("studio.app.chat.banTitle", { name: banning.user.displayName })}
+          title={t("studio.app.chat.banTitle", { name: banning.displayName })}
           onClose={() => setBanning(null)}
           footer={
             <>
@@ -155,7 +177,7 @@ export function ChatPanel({ broadcast }: { broadcast: BroadcastState }) {
               <Button
                 variant="danger"
                 onClick={() => {
-                  void act("chat.ban", banning.user.username, "permanent");
+                  void act("chat.ban", banning.username, "permanent");
                   setBanning(null);
                 }}
               >
@@ -164,7 +186,7 @@ export function ChatPanel({ broadcast }: { broadcast: BroadcastState }) {
             </>
           }
         >
-          <p>{t("studio.app.chat.banBody", { name: banning.user.displayName })}</p>
+          <p>{t("studio.app.chat.banBody", { name: banning.displayName })}</p>
         </Dialog>
       )}
     </section>

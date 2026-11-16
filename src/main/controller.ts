@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import WebSocket from "ws";
 import { createChatModel } from "./chat-model.mjs";
 import { createRealtime } from "./realtime.mjs";
+import { createViewers } from "./viewers.mjs";
 import { createBroadcastMachine } from "./broadcast-machine.mjs";
 import { webOrigin } from "./config.mjs";
 import { createCookieJar, createHttp, StudioHttpError } from "./http.mjs";
@@ -157,6 +158,20 @@ export function startController(win: BrowserWindow) {
       send("chat", { status: chatStatus, ...chat.snapshot() });
     }, 120);
   };
+  // ── Penonton (tab Penonton: `room.viewers` lewat soket yang sama) ─────────────
+  let viewersTimer: NodeJS.Timeout | null = null;
+  const pushViewers = () => {
+    if (viewersTimer) return;
+    viewersTimer = setTimeout(() => {
+      viewersTimer = null;
+      send("viewers", viewers.snapshot());
+    }, 150);
+  };
+  const viewers = createViewers({
+    request: () => realtime.send("room.viewers", {}),
+    loadAvatar: (url: string) => imageDataUrl(origin, url, (abs: string) => downloadImage(abs)),
+    onChange: pushViewers,
+  });
   const realtime = createRealtime({
     origin,
     cookieHeader: () => jar.header(),
@@ -185,6 +200,8 @@ export function startController(win: BrowserWindow) {
       if (msg.type === "chat.message" && msg.data?.type === "gift") ranking.nudge();
       if (msg.type === "chat.message" && (msg.data?.type === "follow" || msg.data?.type === "subscription")) perf.refresh();
       widgetHub.onRealtime(msg);
+      viewers.apply(msg);
+      if (msg.type === "room.viewers") return;
       chat.apply(msg);
       pushChat();
     },
@@ -195,8 +212,10 @@ export function startController(win: BrowserWindow) {
     roomSlug = slug;
     chatStatus = "connecting";
     chat.reset();
+    viewers.reset();
     realtime.connect(slug);
     pushChat();
+    pushViewers();
   }
   /** Scene akun ini dilepas dari mesin (keluar / sesi hilang) supaya akun lain tidak mewarisinya. */
   function resetScenes() {
@@ -217,10 +236,12 @@ export function startController(win: BrowserWindow) {
     chatStatus = "idle";
     realtime.disconnect();
     chat.reset();
+    viewers.reset();
     widgetHub.reset();
     interact.reset();
     send("interact", null);
     pushChat();
+    pushViewers();
   }
 
   function onHttpError(err: unknown) {
@@ -500,6 +521,8 @@ export function startController(win: BrowserWindow) {
 
   handle("broadcast.get", () => machine.snapshot());
   handle("chat.get", () => ({ status: chatStatus, ...chat.snapshot() }));
+  handle("viewers.get", () => viewers.snapshot());
+  handle("viewers.refresh", () => viewers.refresh());
   handle("chat.send", (body: string) => {
     const text = String(body ?? "").trim().slice(0, 500);
     if (!text) return false;
