@@ -131,3 +131,18 @@ test("downloadImage: menolak status gagal, jenis salah, dan ukuran berlebih dari
   await assert.rejects(downloadImage("https://x/a.png", async () => res(404, "image/png", PNG)));
   await assert.rejects(downloadImage("https://x/a.png", async () => res(200, "image/png", PNG, String(MAX_IMAGE_BYTES + 1))));
 });
+
+// Foto profil di chip akun memakai jalur yang sama dengan gambar banner: CSP renderer hanya mengizinkan data:.
+test("imageDataUrl: alamat relatif API → data: URL dari origin; gagal/bukan gambar/kosong → null", async () => {
+  const { imageDataUrl } = await import("../src/main/campaigns.mjs");
+  const seen = [];
+  const ok = async (url) => (seen.push(url), { contentType: "image/png", bytes: PNG });
+  assert.equal(await imageDataUrl("https://sini.live/", "/v1/media/a.webp", ok), `data:image/png;base64,${Buffer.from(PNG).toString("base64")}`);
+  assert.deepEqual(seen, ["https://sini.live/v1/media/a.webp"]);
+  assert.equal(await imageDataUrl("https://sini.live", "https://lh3.googleusercontent.com/x", ok), `data:image/png;base64,${Buffer.from(PNG).toString("base64")}`);
+  assert.equal(await imageDataUrl("https://sini.live", null, ok), null);
+  assert.equal(await imageDataUrl("https://sini.live", "//evil.example/x.png", ok), null);
+  assert.equal(await imageDataUrl("https://sini.live", "/a.svg", async () => ({ contentType: "image/svg+xml", bytes: PNG })), null);
+  assert.equal(await imageDataUrl("https://sini.live", "/a.png", async () => ({ contentType: "image/png", bytes: new Uint8Array() })), null);
+  assert.equal(await imageDataUrl("https://sini.live", "/a.png", async () => { throw new Error("image_status_404"); }), null);
+});

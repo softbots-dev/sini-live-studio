@@ -13,7 +13,7 @@ import { runLink, siteLocale } from "./link.mjs";
 import { liveMaintenance } from "./maintenance.mjs";
 import { createPerfPoller } from "./perf.mjs";
 import { createInteract, wishGifts } from "./interact.mjs";
-import { createCampaigns, downloadImage } from "./campaigns.mjs";
+import { createCampaigns, downloadImage, imageDataUrl } from "./campaigns.mjs";
 import { menuTemplate } from "./menu.mjs";
 import { createSelectionOverlay, type Frame } from "./overlay.js";
 import { CANVAS, createSceneManager, validateSourceSettings } from "./scene-manager.mjs";
@@ -383,10 +383,15 @@ export function startController(win: BrowserWindow) {
     if (!jar.has("sini_at") && !jar.has("sini_rt")) return setAccount({ status: "signedOut", user: null });
     try {
       const { data } = await http.get("/me");
-      const user: User = { id: data.id, username: data.username, displayName: data.displayName, avatarUrl: data.avatarUrl ?? null, roles: data.roles ?? [] };
+      // Foto profil: CSP renderer hanya mengizinkan data:, jadi diunduh di sini dan menyusul setelah tersedia
+      // (sampai itu chip memakai huruf awal nama).
+      const user: User = { id: data.id, username: data.username, displayName: data.displayName, avatarUrl: null, roles: data.roles ?? [] };
       setAccount({ status: "signedIn", user });
       loadScenes(user.id);
       void machine.check();
+      void imageDataUrl(origin, data.avatarUrl, (url: string) => downloadImage(url)).then((avatar: string | null) => {
+        if (avatar && account.status === "signedIn" && account.user?.id === user.id) setAccount({ status: "signedIn", user: { ...account.user, avatarUrl: avatar } });
+      });
     } catch (err) {
       if (err instanceof StudioHttpError && err.status === 401) {
         jar.clear();

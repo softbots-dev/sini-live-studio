@@ -15,6 +15,7 @@ import { ChatPanel } from "../panels/Chat";
 import { PerformancePanel } from "../panels/Performance";
 import { TitleDialog } from "../panels/TitleDialog";
 import { CampaignsCard } from "../panels/Campaigns";
+import { SafeImg } from "../widget/SafeImg";
 
 export type Item = {
   id: string;
@@ -43,6 +44,7 @@ export const ACTIVE_PHASES = new Set(["starting", "connecting", "live", "reconne
 */
 export function StudioScreen({ user }: { user: User }) {
   const { t } = useT();
+  const initial = user.displayName.slice(0, 1).toUpperCase();
   const collection = useMainState<Collection | null>("scenes", "scenes.get", null);
   const broadcast = useMainState<BroadcastState>("broadcast", "broadcast.get", { phase: "idle" });
   const [selected, setSelected] = useState<string | null>(null);
@@ -103,7 +105,7 @@ export function StudioScreen({ user }: { user: User }) {
             <IconButton label={t("studio.app.settings")} icon={<SettingsIcon aria-hidden />} onClick={() => setSettingsOpen(true)} />
             <button type="button" className="account-chip" aria-label={t("studio.app.accountMenu")} onClick={() => void accountMenu()}>
               <span className="avatar" aria-hidden>
-                {user.avatarUrl ? <img src={user.avatarUrl} alt="" /> : user.displayName.slice(0, 1).toUpperCase()}
+                {user.avatarUrl ? <SafeImg src={user.avatarUrl} fallback={initial} /> : initial}
               </span>
               <span className="account-name">{user.displayName}</span>
               <ChevronDown aria-hidden />

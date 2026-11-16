@@ -27,6 +27,19 @@ function absolute(origin, url) {
   return null;
 }
 
+/** Gambar dari API (relatif ke origin atau https) → data: URL untuk renderer (CSP hanya data:), atau null kalau gagal. */
+export async function imageDataUrl(origin, url, fetchImage) {
+  const abs = absolute(origin, url);
+  if (!abs) return null;
+  try {
+    const { contentType, bytes } = await fetchImage(abs);
+    if (!IMAGE_TYPES.has(contentType) || bytes.length === 0 || bytes.length > MAX_IMAGE_BYTES) return null;
+    return `data:${contentType};base64,${Buffer.from(bytes).toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
 export function createCampaigns({ http, fetchImage, getLocale, getDismissed, setDismissed, onState, openExternal, intervalMs = REFRESH_MS }) {
   let list = [];
   let state = [];
@@ -45,15 +58,9 @@ export function createCampaigns({ http, fetchImage, getLocale, getDismissed, set
     const abs = absolute(http.origin, url);
     if (!abs) return null;
     if (images.has(abs)) return images.get(abs);
-    try {
-      const { contentType, bytes } = await fetchImage(abs);
-      if (!IMAGE_TYPES.has(contentType) || bytes.length === 0 || bytes.length > MAX_IMAGE_BYTES) return null;
-      const data = `data:${contentType};base64,${Buffer.from(bytes).toString("base64")}`;
-      images.set(abs, data);
-      return data;
-    } catch {
-      return null;
-    }
+    const data = await imageDataUrl(http.origin, abs, fetchImage);
+    if (data) images.set(abs, data);
+    return data;
   }
 
   async function refresh() {
