@@ -445,7 +445,8 @@ export function startController(win: BrowserWindow) {
   });
   handle("perf.get", () => perfValue);
 
-  handle("interact.get", async () => interact.state() ?? (roomSlug ? await interact.refresh() : null));
+  // Tab Alat dibuka: keadaan terbaru dari server (status live bisa berubah tanpa event alat).
+  handle("interact.get", async () => (roomSlug ? await interact.refresh() : interact.state()));
   handle("interact.goal.start", (input: unknown) => interact.startGoal(input));
   handle("interact.goal.end", () => interact.endGoal());
   handle("interact.poll.start", (input: unknown) => interact.startPoll(input));

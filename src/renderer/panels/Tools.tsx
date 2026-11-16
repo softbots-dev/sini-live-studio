@@ -33,6 +33,17 @@ function useNow() {
   return now;
 }
 
+type DialogBase = { onClose: () => void; error: string | null; busy: boolean };
+
+/** Galat dari server di dalam dialog yang terbuka. */
+function DialogError({ error }: { error: string | null }) {
+  return error ? (
+    <p className="msg-warn" role="alert">
+      {error}
+    </p>
+  ) : null;
+}
+
 const left = (iso: string, now: number) => Math.max(0, Math.ceil((Date.parse(iso) - now) / 1000));
 const clock = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 
@@ -41,6 +52,9 @@ export function ToolsPanel({ broadcast }: { broadcast: BroadcastState }) {
   const state = useMainState<State>("interact", "interact.get", null);
   const [dialog, setDialog] = useState<"goal" | "poll" | "wishes" | "treasure" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Galat & status kirim milik dialog yang terbuka — tampil DI DALAM dialog, bukan di belakang backdrop. */
+  const [dialogError, setDialogError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const now = useNow();
   const nf = new Intl.NumberFormat(locale);
   // Server yang memutuskan `not_live` (status channel), studio menyiarkan = segera live juga.
@@ -53,8 +67,32 @@ export function ToolsPanel({ broadcast }: { broadcast: BroadcastState }) {
     return r.ok;
   };
 
+  const openDialog = (kind: "goal" | "poll" | "wishes" | "treasure") => {
+    setDialogError(null);
+    setDialog(kind);
+  };
+  const closeDialog = () => {
+    setDialogError(null);
+    setDialog(null);
+  };
+  /** Kirim dari dialog: tombol terkunci selama berjalan; gagal = galat di dalam dialog, dialog tetap terbuka. */
+  const submit = async (channel: string, ...args: unknown[]) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const r = await window.studio.invoke<Result>(channel, ...args);
+      if (r.ok) {
+        setError(null);
+        closeDialog();
+      } else setDialogError(errText(r.code));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const dialogProps = { onClose: closeDialog, error: dialogError, busy };
+
   const StartButton = ({ kind }: { kind: "goal" | "poll" | "wishes" | "treasure" }) => (
-    <Button size="sm" variant="primary" disabled={!live} title={live ? undefined : t("studio.app.tools.needLive")} onClick={() => setDialog(kind)}>
+    <Button size="sm" variant="primary" disabled={!live} title={live ? undefined : t("studio.app.tools.needLive")} onClick={() => openDialog(kind)}>
       {t("studio.app.tools.start")}
     </Button>
   );
@@ -178,15 +216,15 @@ export function ToolsPanel({ broadcast }: { broadcast: BroadcastState }) {
         )}
       </article>
 
-      {dialog === "goal" && <GoalDialog onClose={() => setDialog(null)} onSubmit={async (input) => (await run("interact.goal.start", input)) && setDialog(null)} />}
-      {dialog === "poll" && <PollDialog onClose={() => setDialog(null)} onSubmit={async (input) => (await run("interact.poll.start", input)) && setDialog(null)} />}
-      {dialog === "wishes" && <WishesDialog onClose={() => setDialog(null)} onSubmit={async (items) => (await run("interact.wishes.set", items)) && setDialog(null)} />}
-      {dialog === "treasure" && <TreasureDialog onClose={() => setDialog(null)} onSubmit={async (input, key) => (await run("interact.treasure.start", input, key)) && setDialog(null)} />}
+      {dialog === "goal" && <GoalDialog {...dialogProps} onSubmit={(input) => void submit("interact.goal.start", input)} />}
+      {dialog === "poll" && <PollDialog {...dialogProps} onSubmit={(input) => void submit("interact.poll.start", input)} />}
+      {dialog === "wishes" && <WishesDialog {...dialogProps} onSubmit={(items) => void submit("interact.wishes.set", items)} />}
+      {dialog === "treasure" && <TreasureDialog {...dialogProps} onSubmit={(input, key) => void submit("interact.treasure.start", input, key)} />}
     </div>
   );
 }
 
-function GoalDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: (input: { kind: string; target: number; title?: string }) => void }) {
+function GoalDialog({ onClose, onSubmit, error, busy }: DialogBase & { onSubmit: (input: { kind: string; target: number; title?: string }) => void }) {
   const { t } = useT();
   const [kind, setKind] = useState<(typeof GOAL_KINDS)[number]>("coins");
   const [target, setTarget] = useState("1000");
@@ -198,7 +236,7 @@ function GoalDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: (inp
       title={t("studio.app.tools.goal.title")}
       onClose={onClose}
       footer={
-        <Button variant="primary" disabled={!valid} onClick={() => onSubmit({ kind, target: n, ...(title.trim() ? { title: title.trim() } : {}) })}>
+        <Button variant="primary" disabled={!valid || busy} onClick={() => onSubmit({ kind, target: n, ...(title.trim() ? { title: title.trim() } : {}) })}>
           {t("studio.app.tools.start")}
         </Button>
       }
@@ -218,11 +256,12 @@ function GoalDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: (inp
       <Field label={t("studio.app.tools.goal.name")} hint={t("studio.app.tools.goal.nameHint")}>
         {(id) => <input id={id} className="input" maxLength={60} value={title} onChange={(e) => setTitle(e.target.value)} />}
       </Field>
+      <DialogError error={error} />
     </Dialog>
   );
 }
 
-function PollDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: (input: { question: string; options: string[]; durationSec: number }) => void }) {
+function PollDialog({ onClose, onSubmit, error, busy }: DialogBase & { onSubmit: (input: { question: string; options: string[]; durationSec: number }) => void }) {
   const { t } = useT();
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
@@ -234,7 +273,7 @@ function PollDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: (inp
       title={t("studio.app.tools.poll.title")}
       onClose={onClose}
       footer={
-        <Button variant="primary" disabled={!valid} onClick={() => onSubmit({ question: question.trim(), options: clean, durationSec: duration })}>
+        <Button variant="primary" disabled={!valid || busy} onClick={() => onSubmit({ question: question.trim(), options: clean, durationSec: duration })}>
           {t("studio.app.tools.start")}
         </Button>
       }
@@ -264,11 +303,12 @@ function PollDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: (inp
           </select>
         )}
       </Field>
+      <DialogError error={error} />
     </Dialog>
   );
 }
 
-function WishesDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: (items: { giftId: string; target: number }[]) => void }) {
+function WishesDialog({ onClose, onSubmit, error, busy }: DialogBase & { onSubmit: (items: { giftId: string; target: number }[]) => void }) {
   const { t, locale } = useT();
   const [gifts, setGifts] = useState<CatalogGift[] | null>(null);
   const [items, setItems] = useState<{ giftId: string; target: string }[]>([]);
@@ -286,7 +326,7 @@ function WishesDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: (i
       title={t("studio.app.tools.wishes.title")}
       onClose={onClose}
       footer={
-        <Button variant="primary" disabled={!valid} onClick={() => onSubmit(items.map((i) => ({ giftId: i.giftId, target: Number(i.target) })))}>
+        <Button variant="primary" disabled={!valid || busy} onClick={() => onSubmit(items.map((i) => ({ giftId: i.giftId, target: Number(i.target) })))}>
           {t("studio.app.tools.start")}
         </Button>
       }
@@ -316,11 +356,12 @@ function WishesDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: (i
           {t("studio.app.tools.wishes.add")}
         </Button>
       )}
+      <DialogError error={error} />
     </Dialog>
   );
 }
 
-function TreasureDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: (input: { coins: number; slots: number; countdownSec: number; audience: string }, key: string) => void }) {
+function TreasureDialog({ onClose, onSubmit, error, busy }: DialogBase & { onSubmit: (input: { coins: number; slots: number; countdownSec: number; audience: string }, key: string) => void }) {
   const { t, locale } = useT();
   // Satu kunci per dialog: mencoba ulang (jaringan putus) tidak memotong koin dua kali.
   const [key] = useState(() => crypto.randomUUID());
@@ -342,7 +383,7 @@ function TreasureDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: 
       title={t("studio.app.tools.treasure.title")}
       onClose={onClose}
       footer={
-        <Button variant="primary" disabled={!valid || short} onClick={() => onSubmit({ coins: c, slots: s, countdownSec: countdown, audience }, key)}>
+        <Button variant="primary" disabled={!valid || short || busy} onClick={() => onSubmit({ coins: c, slots: s, countdownSec: countdown, audience }, key)}>
           {t("studio.app.tools.start")}
         </Button>
       }
@@ -385,6 +426,7 @@ function TreasureDialog({ onClose, onSubmit }: { onClose: () => void; onSubmit: 
           </Button>
         </div>
       )}
+      <DialogError error={error} />
     </Dialog>
   );
 }
